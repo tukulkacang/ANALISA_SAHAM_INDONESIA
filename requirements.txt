@@ -1,0 +1,8 @@
+streamlit
+yfinance
+pandas
+numpy
+requests
+openpyxl
+xlrd
+plotly>=5.0.0
