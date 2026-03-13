@@ -1465,6 +1465,907 @@ def create_broker_chart(broker_data):
     return fig
 
 # ============================================================================
+# FUNGSI GROQ AI ANALYST
+# ============================================================================
+
+def groq_ai_analyze(prompt, groq_api_key, model="llama3-8b-8192"):
+    """Kirim prompt ke Groq API dan return response text"""
+    try:
+        import urllib.request
+        import urllib.error
+
+        payload = json.dumps({
+            "model": model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "Kamu adalah analis saham Indonesia profesional yang berpengalaman. "
+                        "Berikan analisis yang tajam, actionable, dan dalam Bahasa Indonesia. "
+                        "Gunakan data teknikal yang diberikan untuk insight mendalam. "
+                        "Format respons dengan poin-poin yang jelas dan ringkas."
+                    )
+                },
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.4,
+            "max_tokens": 1500,
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {groq_api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode())
+            return result["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"❌ Error Groq API: {str(e)}"
+
+
+def build_scanner_prompt(df_res):
+    """Buat prompt dari hasil scanner untuk dikirim ke Groq"""
+    top_buy   = df_res[df_res['Rekomendasi'].isin(['STRONG BUY','BUY'])].nlargest(10, 'Score')
+    top_vol   = df_res.nlargest(8, 'Vol_Ratio')
+    top_akum  = df_res[df_res['Bandar'] == 'AKUMULASI'].nlargest(8, 'Score')
+    top_gain  = df_res.nlargest(8, 'Change_1D')
+    top_loss  = df_res.nsmallest(8, 'Change_1D')
+
+    def fmt_row(r):
+        return (f"  {r['Symbol']} ({r['Nama'][:20]}): "
+                f"Score={r['Score']}, RSI={r['RSI']:.0f}, "
+                f"Vol={r['Vol_Ratio']:.1f}x, 1D={r['Change_1D']:+.1f}%, "
+                f"Bandar={r['Bandar']}, Sinyal={r['Sinyal']}")
+
+    lines = [
+        f"=== HASIL SCAN PASAR SAHAM INDONESIA — {datetime.now().strftime('%d %b %Y %H:%M')} ===",
+        f"Total saham teranalisis: {len(df_res)}",
+        f"STRONG BUY: {len(df_res[df_res['Rekomendasi']=='STRONG BUY'])} | "
+        f"BUY: {len(df_res[df_res['Rekomendasi']=='BUY'])} | "
+        f"NEUTRAL: {len(df_res[df_res['Rekomendasi']=='NEUTRAL'])} | "
+        f"SELL: {len(df_res[df_res['Rekomendasi'].isin(['SELL','WEAK SELL'])])}",
+        f"Volume Anomali (>2x): {len(df_res[df_res['Vol_Anomaly']])}",
+        f"Akumulasi: {len(df_res[df_res['Bandar']=='AKUMULASI'])} | "
+        f"Distribusi: {len(df_res[df_res['Bandar']=='DISTRIBUSI'])}",
+        "",
+        "TOP BUY SIGNAL:",
+        *[fmt_row(r) for _, r in top_buy.iterrows()],
+        "",
+        "TOP VOLUME ANOMALI:",
+        *[fmt_row(r) for _, r in top_vol.iterrows()],
+        "",
+        "TOP AKUMULASI (Bandarmologi):",
+        *[fmt_row(r) for _, r in top_akum.iterrows()],
+        "",
+        "TOP GAINER HARI INI:",
+        *[fmt_row(r) for _, r in top_gain.iterrows()],
+        "",
+        "TOP LOSER HARI INI:",
+        *[fmt_row(r) for _, r in top_loss.iterrows()],
+    ]
+
+    prompt = "\n".join(lines) + """
+
+Berdasarkan data scan di atas, berikan analisis komprehensif meliputi:
+
+1. 🌡️ **SENTIMEN PASAR** — Bagaimana kondisi pasar IDX hari ini secara keseluruhan?
+
+2. 🏆 **TOP 5 SAHAM PILIHAN** — Saham terbaik untuk dipertimbangkan hari ini beserta alasannya
+
+3. 🚨 **ALERT VOLUME ANOMALI** — Saham mana yang perlu diwaspadai karena pergerakan volume tidak wajar?
+
+4. 🕵️ **SINYAL BANDARMOLOGI** — Saham mana yang terindikasi sedang diakumulasi smart money?
+
+5. ⚡ **TOP GAINER & LOSER** — Analisis momentum dan apakah masih layak dikejar atau justru dihindari?
+
+6. 🎯 **STRATEGI HARI INI** — Rekomendasi konkret untuk trader intraday dan swing trader
+
+7. ⚠️ **RISIKO & DISCLAIMER** — Peringatan risiko yang perlu diperhatikan
+
+Jawab dalam Bahasa Indonesia yang profesional namun mudah dipahami."""
+    return prompt
+
+
+def build_single_stock_prompt(row):
+    """Prompt AI untuk satu saham dari hasil scanner"""
+    return f"""
+Analisis saham berikut dari hasil scanner teknikal:
+
+Kode     : {row['Symbol']} — {row['Nama']}
+Harga    : Rp {row['Harga']:,.0f}
+Perubahan: 1D={row['Change_1D']:+.2f}% | 1W={row['Change_1W']:+.2f}% | 1M={row['Change_1M']:+.2f}%
+Score    : {row['Score']}/100 → {row['Rekomendasi']}
+RSI      : {row['RSI']:.1f}
+Vol Ratio: {row['Vol_Ratio']:.2f}x rata-rata 20 hari
+Bandar   : {row['Bandar']} (OBV: {row['OBV_Trend']})
+BB Pos   : {row['BB_Pos']:.0%} (0%=bawah, 100%=atas Bollinger Band)
+Support  : Rp {row['Support']:,.0f}
+Resistance: Rp {row['Resistance']:,.0f}
+MACD Cross: {'✅ Bullish Cross' if row['MACD_Cross'] else '❌ Belum cross'}
+Sinyal   : {row['Sinyal']}
+
+Berikan analisis singkat (max 300 kata) mencakup:
+1. **Kesimpulan** — layak beli/jual/hold?
+2. **Alasan Teknikal** — indikator apa yang mendukung keputusan ini?
+3. **Level Entry** — harga masuk yang ideal
+4. **Stop Loss & Target** — level SL dan TP yang disarankan
+5. **Risiko** — apa yang perlu diwaspadai?
+
+Jawab dalam Bahasa Indonesia yang padat dan actionable.
+"""
+
+
+# ============================================================================
+# FUNGSI SCANNER MASSAL
+# ============================================================================
+
+BLUECHIP_LIST = [
+    'BBCA.JK','BBRI.JK','BMRI.JK','BBNI.JK','TLKM.JK','ASII.JK',
+    'UNVR.JK','KLBF.JK','ICBP.JK','INDF.JK','UNTR.JK','PGAS.JK',
+    'ADRO.JK','PTBA.JK','ITMG.JK','ANTM.JK','TINS.JK','SMGR.JK',
+    'INTP.JK','CPIN.JK','JPFA.JK','INKP.JK','TKIM.JK','EXCL.JK',
+    'ISAT.JK','BYAN.JK','HRUM.JK','BSSR.JK','MBAP.JK','GEMS.JK',
+    'BRPT.JK','TPIA.JK','ESSA.JK','BRIS.JK','ARTO.JK','GOTO.JK',
+    'BUKA.JK','MYOR.JK','STTP.JK','ULTJ.JK','CLEO.JK','CMRY.JK',
+    'HEAL.JK','MIKA.JK','SILO.JK','AMRT.JK','LPPF.JK','MAPI.JK',
+    'AVIA.JK','MARK.JK','TLKM.JK','BBTN.JK','BJBR.JK','BJTM.JK',
+    'ERAA.JK','RALS.JK','SCMA.JK','MNCN.JK','TBIG.JK','TOWR.JK',
+]
+
+
+def quick_scan_stock(symbol):
+    """Scan cepat satu saham — return dict hasil atau None"""
+    try:
+        ticker = yf.Ticker(symbol)
+        df = ticker.history(period='6mo', interval='1d', timeout=12)
+        if df is None or df.empty or len(df) < 30:
+            return None
+
+        df.index = pd.to_datetime(df.index)
+        if df.index.tz is not None:
+            df.index = df.index.tz_localize(None)
+
+        close  = df['Close']
+        volume = df['Volume']
+        high   = df['High']
+        low    = df['Low']
+        open_  = df['Open']
+
+        # ── Harga & perubahan ──────────────────────────────────────────
+        price     = close.iloc[-1]
+        price_1d  = (close.iloc[-1] / close.iloc[-2]  - 1) * 100 if len(close) > 1  else 0
+        price_1w  = (close.iloc[-1] / close.iloc[-6]  - 1) * 100 if len(close) > 5  else 0
+        price_1mo = (close.iloc[-1] / close.iloc[-22] - 1) * 100 if len(close) > 21 else 0
+
+        # ── Moving averages ────────────────────────────────────────────
+        sma20  = close.rolling(20).mean().iloc[-1]
+        sma50  = close.rolling(50).mean().iloc[-1] if len(close) >= 50 else sma20
+        sma200 = close.rolling(200).mean().iloc[-1] if len(close) >= 200 else sma20
+
+        # ── RSI ────────────────────────────────────────────────────────
+        delta = close.diff()
+        gain  = delta.clip(lower=0).rolling(14).mean()
+        loss  = (-delta.clip(upper=0)).rolling(14).mean()
+        rs    = gain / loss.replace(0, 1e-9)
+        rsi   = (100 - 100 / (1 + rs)).iloc[-1]
+
+        # ── MACD ───────────────────────────────────────────────────────
+        ema12       = close.ewm(span=12).mean()
+        ema26       = close.ewm(span=26).mean()
+        macd_line   = ema12 - ema26
+        signal_line = macd_line.ewm(span=9).mean()
+        macd_val    = macd_line.iloc[-1]
+        macd_sig    = signal_line.iloc[-1]
+        macd_cross  = (macd_val > macd_sig) and (macd_line.iloc[-2] <= signal_line.iloc[-2])
+
+        # ── Stochastic ─────────────────────────────────────────────────
+        lo14  = low.rolling(14).min()
+        hi14  = high.rolling(14).max()
+        stoch_k = ((close - lo14) / (hi14 - lo14).replace(0, 1e-9) * 100).iloc[-1]
+
+        # ── Volume anomali ─────────────────────────────────────────────
+        vol_avg   = volume.rolling(20).mean().iloc[-1]
+        vol_ratio = volume.iloc[-1] / vol_avg if vol_avg > 0 else 1.0
+        vol_5d    = volume.tail(5).mean()
+        vol_trend = 'NAIK' if vol_5d > vol_avg else 'TURUN'
+
+        # ── OBV (Bandarmologi) ─────────────────────────────────────────
+        obv = [0]
+        for i in range(1, len(df)):
+            if close.iloc[i] > close.iloc[i-1]:
+                obv.append(obv[-1] + volume.iloc[i])
+            elif close.iloc[i] < close.iloc[i-1]:
+                obv.append(obv[-1] - volume.iloc[i])
+            else:
+                obv.append(obv[-1])
+        obv_s     = pd.Series(obv)
+        obv_sma   = obv_s.rolling(20).mean()
+        obv_trend = 'UP' if obv_s.iloc[-1] > obv_sma.iloc[-1] else 'DOWN'
+        obv_slope = obv_s.iloc[-1] - obv_s.iloc[-5]  # slope 5 hari
+
+        # ── A/D Line ───────────────────────────────────────────────────
+        hl  = (high - low).replace(0, 1e-9)
+        mfm = ((close - low) - (high - close)) / hl
+        ad  = (mfm * volume).cumsum()
+        ad_trend = 'UP' if ad.iloc[-1] > ad.iloc[-10] else 'DOWN'
+
+        # ── Bollinger Bands ────────────────────────────────────────────
+        bb_mid   = close.rolling(20).mean()
+        bb_std   = close.rolling(20).std()
+        bb_upper = (bb_mid + 2 * bb_std).iloc[-1]
+        bb_lower = (bb_mid - 2 * bb_std).iloc[-1]
+        bb_range = bb_upper - bb_lower
+        bb_pos   = (price - bb_lower) / bb_range if bb_range > 0 else 0.5
+        bb_pct   = (bb_range / bb_mid.iloc[-1]) * 100  # BB width %
+
+        # ── ATR & Support/Resistance ───────────────────────────────────
+        tr  = pd.concat([high-low, (high-close.shift()).abs(), (low-close.shift()).abs()], axis=1).max(axis=1)
+        atr = tr.rolling(14).mean().iloc[-1]
+        support    = low.rolling(20).min().iloc[-1]
+        resistance = high.rolling(20).max().iloc[-1]
+
+        # ── Candle pattern (sederhana) ─────────────────────────────────
+        body      = abs(close.iloc[-1] - open_.iloc[-1])
+        full_rng  = high.iloc[-1] - low.iloc[-1]
+        is_doji   = body / full_rng < 0.1 if full_rng > 0 else False
+        is_green  = close.iloc[-1] > open_.iloc[-1]
+        is_hammer = (
+            (low.iloc[-1] < min(open_.iloc[-1], close.iloc[-1]) - body) and
+            body / full_rng < 0.4
+        ) if full_rng > 0 else False
+
+        # ── Top Gainer / Loser flag ────────────────────────────────────
+        is_top_gainer = price_1d >= 3.0
+        is_top_loser  = price_1d <= -3.0
+
+        # ── SCORING ───────────────────────────────────────────────────
+        score   = 0
+        signals = []
+
+        # Trend (30 pts)
+        if price > sma20:                     score += 10; signals.append('Di atas SMA20')
+        if price > sma50:                     score += 10; signals.append('Di atas SMA50')
+        if sma20 > sma50:                     score += 10; signals.append('SMA20 > SMA50 (uptrend)')
+
+        # Momentum (25 pts)
+        if rsi < 35:                          score += 15; signals.append(f'RSI oversold ({rsi:.0f})')
+        elif 35 <= rsi <= 55:                 score += 10; signals.append(f'RSI zona beli ({rsi:.0f})')
+        if macd_cross:                        score += 10; signals.append('MACD bullish cross ⚡')
+        elif macd_val > macd_sig:             score +=  5; signals.append('MACD > signal')
+
+        # Volume (25 pts)
+        if vol_ratio >= 3.0:                  score += 25; signals.append(f'Vol spike BESAR {vol_ratio:.1f}x 🚨')
+        elif vol_ratio >= 2.0:                score += 15; signals.append(f'Vol anomali {vol_ratio:.1f}x')
+        elif vol_ratio >= 1.5:                score += 8;  signals.append(f'Vol tinggi {vol_ratio:.1f}x')
+
+        # Bandarmologi (20 pts)
+        if obv_trend == 'UP':                 score += 10; signals.append('OBV naik (akumulasi)')
+        if ad_trend  == 'UP':                 score += 5;  signals.append('A/D Line naik')
+        if obv_slope > 0 and ad_trend=='UP':  score += 5;  signals.append('Smart money masuk')
+
+        # Bollinger (10 pts)
+        if bb_pos < 0.15:                     score += 10; signals.append('Dekat BB bawah (oversold BB)')
+        elif bb_pos < 0.3:                    score +=  5; signals.append('Zona BB bawah')
+
+        # Candle bonus
+        if is_hammer and is_green:            score += 5;  signals.append('Hammer bullish 🔨')
+        if price_1d > 0 and vol_ratio > 1.5: score += 5;  signals.append('Up day + vol tinggi')
+
+        # ── Rekomendasi ────────────────────────────────────────────────
+        if score >= 75:    rec = 'STRONG BUY';  rec_color = '🟢🟢'
+        elif score >= 55:  rec = 'BUY';         rec_color = '🟢'
+        elif score >= 38:  rec = 'NEUTRAL';     rec_color = '🟡'
+        elif score >= 22:  rec = 'WEAK SELL';   rec_color = '🔴'
+        else:              rec = 'SELL';        rec_color = '🔴🔴'
+
+        # Bandarmologi status
+        if obv_trend == 'UP' and ad_trend == 'UP' and price > sma20:
+            bandar_status = 'AKUMULASI'
+        elif obv_trend == 'DOWN' and ad_trend == 'DOWN' and price < sma20:
+            bandar_status = 'DISTRIBUSI'
+        else:
+            bandar_status = 'NETRAL'
+
+        return {
+            'Symbol':        symbol,
+            'Nama':          SAHAM_INDONESIA.get(symbol, symbol),
+            'Harga':         price,
+            'Change_1D':     price_1d,
+            'Change_1W':     price_1w,
+            'Change_1M':     price_1mo,
+            'RSI':           rsi,
+            'Stoch_K':       stoch_k,
+            'MACD_Cross':    macd_cross,
+            'MACD_Val':      macd_val,
+            'Vol_Ratio':     vol_ratio,
+            'Vol_Trend':     vol_trend,
+            'Vol_Anomaly':   vol_ratio >= 2.0,
+            'OBV_Trend':     obv_trend,
+            'AD_Trend':      ad_trend,
+            'Bandar':        bandar_status,
+            'BB_Pos':        bb_pos,
+            'BB_Width':      bb_pct,
+            'Score':         score,
+            'Rekomendasi':   rec,
+            'Rec_Color':     rec_color,
+            'Sinyal':        ', '.join(signals[:5]),
+            'Support':       support,
+            'Resistance':    resistance,
+            'ATR':           atr,
+            'SMA20':         sma20,
+            'SMA50':         sma50,
+            'Top_Gainer':    is_top_gainer,
+            'Top_Loser':     is_top_loser,
+        }
+    except Exception:
+        return None
+
+
+def run_scanner(symbols_to_scan, progress_bar, status_text):
+    """Scan list saham dengan delay anti-rate-limit"""
+    results = []
+    total   = len(symbols_to_scan)
+    failed  = 0
+
+    for i, sym in enumerate(symbols_to_scan):
+        status_text.markdown(
+            f"🔍 Scanning **{sym}** ({i+1}/{total}) — "
+            f"✅ Berhasil: {len(results)} | ❌ Gagal: {failed}"
+        )
+        progress_bar.progress((i + 1) / total)
+
+        result = quick_scan_stock(sym)
+        if result:
+            results.append(result)
+        else:
+            failed += 1
+
+        # Delay adaptif: lebih lambat setiap 50 saham agar tidak kena rate limit
+        if (i + 1) % 50 == 0:
+            time.sleep(random.uniform(3.0, 5.0))
+        else:
+            time.sleep(random.uniform(0.25, 0.55))
+
+    return pd.DataFrame(results) if results else pd.DataFrame()
+
+
+def render_scanner_tab():
+    """Render tab scanner lengkap dengan AI Analyst (Groq)"""
+    st.markdown('<div class="tab-subheader">🔭 Stock Scanner — Scan Massal + AI Analyst (Groq)</div>', unsafe_allow_html=True)
+
+    st.markdown(
+        '<div class="info-box">📌 Scanner otomatis menghitung RSI, MACD, Volume Anomali, Bandarmologi (OBV/A/D), '
+        'Bollinger Bands, Top Gainer/Loser pada semua saham IDX — lalu AI Groq memberikan insight mendalam.</div>',
+        unsafe_allow_html=True
+    )
+
+    # ── Groq API Key ───────────────────────────────────────────────────────
+    with st.expander('🤖 Pengaturan AI Analyst (Groq) — Klik untuk expand', expanded=False):
+        st.markdown(
+            "Dapatkan API key **GRATIS** di [console.groq.com](https://console.groq.com) → "
+            "API Keys → Create API Key"
+        )
+        groq_key = st.text_input(
+            'Groq API Key:', type='password',
+            placeholder='gsk_xxxxxxxxxxxxxxxxxxxx',
+            help='API key Groq gratis, tidak perlu kartu kredit'
+        )
+        groq_model = st.selectbox('Model AI:', [
+            'llama3-8b-8192',
+            'llama3-70b-8192',
+            'mixtral-8x7b-32768',
+            'gemma2-9b-it',
+        ], help='llama3-70b lebih cerdas tapi sedikit lebih lambat')
+
+        if groq_key:
+            st.success('✅ API Key tersimpan untuk sesi ini')
+        else:
+            st.warning('⚠️ Tanpa API key, fitur AI Analyst tidak aktif (scanner tetap bisa dipakai)')
+
+    st.markdown('---')
+
+    # ── Pengaturan scanner ─────────────────────────────────────────────────
+    cfg1, cfg2, cfg3, cfg4 = st.columns(4)
+
+    with cfg1:
+        scan_mode = st.selectbox('Mode Scan:', [
+            'LQ45 & Blue Chip (cepat)',
+            'Custom (pilih sendiri)',
+            'Semua Saham IDX (lambat ~15 menit)',
+        ])
+
+    with cfg2:
+        filter_rec = st.multiselect('Filter Sinyal:', [
+            'STRONG BUY', 'BUY', 'NEUTRAL', 'WEAK SELL', 'SELL'
+        ], default=['STRONG BUY', 'BUY'])
+
+    with cfg3:
+        filter_bandar = st.selectbox('Filter Bandarmologi:', [
+            'Semua', 'AKUMULASI', 'DISTRIBUSI', 'NETRAL'
+        ])
+
+    with cfg4:
+        filter_vol   = st.checkbox('🚨 Volume Anomali saja (≥2x)', value=False)
+        filter_gain  = st.checkbox('📈 Top Gainer saja (≥+3%)',   value=False)
+        filter_loss  = st.checkbox('📉 Top Loser saja (≤-3%)',    value=False)
+        sort_by      = st.selectbox('Urutkan berdasarkan:', [
+            'Score', 'Change_1D', 'Vol_Ratio', 'RSI', 'Change_1W', 'Change_1M'
+        ])
+
+    # ── Pilihan saham ──────────────────────────────────────────────────────
+    if scan_mode == 'Custom (pilih sendiri)':
+        custom_picks = st.multiselect(
+            'Pilih saham yang ingin di-scan (maks 150):',
+            options=list(SAHAM_INDONESIA.keys()),
+            default=BLUECHIP_LIST[:20],
+            format_func=lambda x: f"{x} – {SAHAM_INDONESIA[x]}",
+        )
+        symbols_to_scan = custom_picks[:150]
+    elif scan_mode == 'LQ45 & Blue Chip (cepat)':
+        symbols_to_scan = BLUECHIP_LIST
+        st.info(f'📋 Akan scan **{len(symbols_to_scan)}** saham LQ45 & Blue Chip (~1-2 menit)')
+    else:
+        symbols_to_scan = list(SAHAM_INDONESIA.keys())
+        st.warning(
+            f'⚠️ Scan semua **{len(symbols_to_scan)}** saham IDX. '
+            f'Estimasi waktu ~{len(symbols_to_scan)//4} menit. '
+            f'Pastikan koneksi internet stabil dan jangan tutup browser!'
+        )
+
+    # ── Tombol scan ────────────────────────────────────────────────────────
+    st.markdown('---')
+    btn1, btn2, btn3 = st.columns([1.5, 1.5, 4])
+    with btn1:
+        start_scan = st.button('🚀 Mulai Scan', use_container_width=True, type='primary')
+    with btn2:
+        clear_scan = st.button('🗑️ Hapus Hasil', use_container_width=True)
+    with btn3:
+        if 'scanner_results' in st.session_state:
+            n = len(st.session_state['scanner_results'])
+            st.success(f"✅ Cache hasil: {n} saham. Klik Mulai Scan untuk refresh.")
+
+    if clear_scan:
+        st.session_state.pop('scanner_results', None)
+        st.session_state.pop('ai_market_analysis', None)
+        st.rerun()
+
+    # ── Eksekusi scan ──────────────────────────────────────────────────────
+    if start_scan:
+        if not symbols_to_scan:
+            st.warning('Pilih minimal 1 saham.')
+        else:
+            st.session_state.pop('scanner_results', None)
+            st.session_state.pop('ai_market_analysis', None)
+            prog  = st.progress(0)
+            stxt  = st.empty()
+            t0    = time.time()
+
+            df_results = run_scanner(symbols_to_scan, prog, stxt)
+
+            elapsed = time.time() - t0
+            prog.empty()
+            stxt.empty()
+
+            if not df_results.empty:
+                st.session_state['scanner_results'] = df_results
+                st.success(
+                    f'✅ Scan selesai dalam {elapsed:.0f} detik! '
+                    f'{len(df_results)}/{len(symbols_to_scan)} saham berhasil dianalisis.'
+                )
+            else:
+                st.error('❌ Tidak ada data berhasil diambil. Tunggu 2 menit lalu coba lagi.')
+
+    # ── Tampilkan hasil ────────────────────────────────────────────────────
+    if 'scanner_results' not in st.session_state:
+        return
+
+    df_all = st.session_state['scanner_results'].copy()
+    df_res = df_all.copy()
+
+    # Terapkan filter
+    if filter_rec:
+        df_res = df_res[df_res['Rekomendasi'].isin(filter_rec)]
+    if filter_bandar != 'Semua':
+        df_res = df_res[df_res['Bandar'] == filter_bandar]
+    if filter_vol:
+        df_res = df_res[df_res['Vol_Anomaly']]
+    if filter_gain:
+        df_res = df_res[df_res['Top_Gainer']]
+    if filter_loss:
+        df_res = df_res[df_res['Top_Loser']]
+
+    asc    = sort_by == 'RSI'
+    df_res = df_res.sort_values(sort_by, ascending=asc)
+
+    if df_res.empty:
+        st.info('Tidak ada saham yang memenuhi filter. Coba longgarkan kriteria.')
+        return
+
+    # ────────────────────────────────────────────────────────────────────────
+    # SUB-TAB HASIL
+    # ────────────────────────────────────────────────────────────────────────
+    stab1, stab2, stab3, stab4, stab5, stab6 = st.tabs([
+        '📊 Ringkasan & Tabel',
+        '📈 Top Gainer / Loser',
+        '🚨 Volume Anomali',
+        '🕵️ Bandarmologi',
+        '🎯 BUY/SELL Signal',
+        '🤖 AI Analyst (Groq)',
+    ])
+
+    # ── SUB-TAB 1: Ringkasan & Tabel ──────────────────────────────────────
+    with stab1:
+        m1,m2,m3,m4,m5,m6 = st.columns(6)
+        with m1: st.metric('STRONG BUY 🟢🟢', len(df_all[df_all['Rekomendasi']=='STRONG BUY']))
+        with m2: st.metric('BUY 🟢',          len(df_all[df_all['Rekomendasi']=='BUY']))
+        with m3: st.metric('NEUTRAL 🟡',      len(df_all[df_all['Rekomendasi']=='NEUTRAL']))
+        with m4: st.metric('SELL 🔴',         len(df_all[df_all['Rekomendasi'].isin(['SELL','WEAK SELL'])]))
+        with m5: st.metric('Vol Anomali 🚨',  len(df_all[df_all['Vol_Anomaly']]))
+        with m6: st.metric('Akumulasi 🕵️',   len(df_all[df_all['Bandar']=='AKUMULASI']))
+
+        st.markdown(f'**Menampilkan {len(df_res)} saham (dari {len(df_all)} hasil scan)**')
+
+        disp = df_res[[
+            'Rec_Color','Symbol','Nama','Harga','Change_1D','Change_1W','Change_1M',
+            'Score','RSI','Vol_Ratio','Bandar','Sinyal'
+        ]].rename(columns={
+            'Rec_Color':'','Symbol':'Kode','Nama':'Nama Perusahaan',
+            'Harga':'Harga','Change_1D':'1D%','Change_1W':'1W%','Change_1M':'1M%',
+            'Score':'Score','RSI':'RSI','Vol_Ratio':'Vol Ratio','Bandar':'Bandarmologi','Sinyal':'Sinyal'
+        }).copy()
+        disp['Harga']    = disp['Harga'].apply(lambda x: f'Rp {x:,.0f}')
+        disp['1D%']      = disp['1D%'].apply(lambda x: f'{x:+.2f}%')
+        disp['1W%']      = disp['1W%'].apply(lambda x: f'{x:+.2f}%')
+        disp['1M%']      = disp['1M%'].apply(lambda x: f'{x:+.2f}%')
+        disp['RSI']      = disp['RSI'].apply(lambda x: f'{x:.1f}')
+        disp['Vol Ratio']= disp['Vol Ratio'].apply(lambda x: f'{x:.2f}x')
+        disp['Score']    = disp['Score'].apply(lambda x: f'{x}/100')
+        st.dataframe(disp, use_container_width=True, hide_index=True, height=520)
+
+        # Scatter: Score vs RSI
+        st.subheader('🗺️ Peta Saham: Score vs RSI')
+        cmap = {'STRONG BUY':'#00c853','BUY':'#64dd17','NEUTRAL':'#ffd600',
+                'WEAK SELL':'#ff6d00','SELL':'#dd2c00'}
+        fig_sc = go.Figure()
+        for rec, grp in df_res.groupby('Rekomendasi'):
+            fig_sc.add_trace(go.Scatter(
+                x=grp['RSI'], y=grp['Score'], mode='markers+text',
+                name=rec, text=grp['Symbol'].str.replace('.JK',''),
+                textposition='top center', textfont=dict(size=9),
+                marker=dict(size=9, color=cmap.get(rec,'#999')),
+                hovertemplate='<b>%{text}</b><br>RSI:%{x:.1f} Score:%{y}<extra></extra>',
+            ))
+        fig_sc.add_vline(x=30, line_dash='dash', line_color='green', annotation_text='Oversold 30')
+        fig_sc.add_vline(x=70, line_dash='dash', line_color='red',   annotation_text='Overbought 70')
+        fig_sc.add_hline(y=55, line_dash='dot',  line_color='orange',annotation_text='Score 55')
+        fig_sc.update_layout(height=520, xaxis_title='RSI', yaxis_title='Score',
+                             legend_title='Rekomendasi', margin=dict(t=30))
+        st.plotly_chart(fig_sc, use_container_width=True)
+
+        # Download
+        csv_dl = df_all.to_csv(index=False).encode('utf-8')
+        st.download_button('📥 Download Semua Hasil (CSV)', data=csv_dl,
+                           file_name=f'scanner_{datetime.now().strftime("%Y%m%d_%H%M")}.csv',
+                           mime='text/csv')
+
+    # ── SUB-TAB 2: Top Gainer / Loser ─────────────────────────────────────
+    with stab2:
+        st.subheader('📈 Top Gainer & Loser Hari Ini')
+        g1, g2 = st.columns(2)
+
+        top_gain = df_all.nlargest(15, 'Change_1D')
+        top_loss = df_all.nsmallest(15, 'Change_1D')
+
+        with g1:
+            st.markdown('### 🟢 Top 15 Gainer')
+            fig_g = go.Figure(go.Bar(
+                y=top_gain['Symbol'].str.replace('.JK',''),
+                x=top_gain['Change_1D'], orientation='h',
+                marker_color='#00c853',
+                text=top_gain['Change_1D'].apply(lambda x: f'{x:+.2f}%'),
+                textposition='outside',
+                hovertext=top_gain['Nama'],
+            ))
+            fig_g.update_layout(height=480, xaxis_title='Perubahan %',
+                                margin=dict(l=10,r=60))
+            st.plotly_chart(fig_g, use_container_width=True)
+
+            st.dataframe(top_gain[['Symbol','Nama','Harga','Change_1D','Vol_Ratio','RSI','Rekomendasi']
+                         ].rename(columns={'Change_1D':'1D%','Vol_Ratio':'Vol Ratio'
+                         }).assign(**{
+                             'Harga': top_gain['Harga'].apply(lambda x: f'Rp {x:,.0f}'),
+                             '1D%': top_gain['Change_1D'].apply(lambda x: f'{x:+.2f}%'),
+                             'Vol Ratio': top_gain['Vol_Ratio'].apply(lambda x: f'{x:.1f}x'),
+                             'RSI': top_gain['RSI'].apply(lambda x: f'{x:.0f}'),
+                         }), use_container_width=True, hide_index=True)
+
+        with g2:
+            st.markdown('### 🔴 Top 15 Loser')
+            fig_l = go.Figure(go.Bar(
+                y=top_loss['Symbol'].str.replace('.JK',''),
+                x=top_loss['Change_1D'], orientation='h',
+                marker_color='#dd2c00',
+                text=top_loss['Change_1D'].apply(lambda x: f'{x:+.2f}%'),
+                textposition='outside',
+                hovertext=top_loss['Nama'],
+            ))
+            fig_l.update_layout(height=480, xaxis_title='Perubahan %',
+                                margin=dict(l=10,r=60))
+            st.plotly_chart(fig_l, use_container_width=True)
+
+            st.dataframe(top_loss[['Symbol','Nama','Harga','Change_1D','Vol_Ratio','RSI','Rekomendasi']
+                         ].rename(columns={'Change_1D':'1D%','Vol_Ratio':'Vol Ratio'
+                         }).assign(**{
+                             'Harga': top_loss['Harga'].apply(lambda x: f'Rp {x:,.0f}'),
+                             '1D%': top_loss['Change_1D'].apply(lambda x: f'{x:+.2f}%'),
+                             'Vol Ratio': top_loss['Vol_Ratio'].apply(lambda x: f'{x:.1f}x'),
+                             'RSI': top_loss['RSI'].apply(lambda x: f'{x:.0f}'),
+                         }), use_container_width=True, hide_index=True)
+
+        # 1W & 1M
+        st.markdown('---')
+        w1, w2 = st.columns(2)
+        with w1:
+            st.subheader('📅 Top Gainer 1 Minggu')
+            top_1w = df_all.nlargest(10,'Change_1W')[['Symbol','Nama','Change_1W','Change_1D','RSI']]
+            top_1w['Change_1W'] = top_1w['Change_1W'].apply(lambda x: f'{x:+.2f}%')
+            top_1w['Change_1D'] = top_1w['Change_1D'].apply(lambda x: f'{x:+.2f}%')
+            top_1w['RSI']       = top_1w['RSI'].apply(lambda x: f'{x:.0f}')
+            st.dataframe(top_1w, use_container_width=True, hide_index=True)
+        with w2:
+            st.subheader('📅 Top Gainer 1 Bulan')
+            top_1m = df_all.nlargest(10,'Change_1M')[['Symbol','Nama','Change_1M','Change_1D','RSI']]
+            top_1m['Change_1M'] = top_1m['Change_1M'].apply(lambda x: f'{x:+.2f}%')
+            top_1m['Change_1D'] = top_1m['Change_1D'].apply(lambda x: f'{x:+.2f}%')
+            top_1m['RSI']       = top_1m['RSI'].apply(lambda x: f'{x:.0f}')
+            st.dataframe(top_1m, use_container_width=True, hide_index=True)
+
+    # ── SUB-TAB 3: Volume Anomali ──────────────────────────────────────────
+    with stab3:
+        st.subheader('🚨 Deteksi Volume Anomali')
+        vol_df = df_all.sort_values('Vol_Ratio', ascending=False)
+
+        v1, v2, v3 = st.columns(3)
+        with v1: st.metric('Vol ≥ 5x (Extreme)', len(vol_df[vol_df['Vol_Ratio']>=5]))
+        with v2: st.metric('Vol ≥ 2x (Anomali)',  len(vol_df[vol_df['Vol_Ratio']>=2]))
+        with v3: st.metric('Vol ≥ 1.5x (Tinggi)', len(vol_df[vol_df['Vol_Ratio']>=1.5]))
+
+        top_vol = vol_df.head(20)
+        fig_vol = go.Figure(go.Bar(
+            y=top_vol['Symbol'].str.replace('.JK',''),
+            x=top_vol['Vol_Ratio'], orientation='h',
+            marker_color=['#b71c1c' if v>=5 else '#e53935' if v>=3 else '#fb8c00' if v>=2 else '#fdd835'
+                         for v in top_vol['Vol_Ratio']],
+            text=top_vol['Vol_Ratio'].apply(lambda x: f'{x:.1f}x'),
+            textposition='outside',
+            hovertext=top_vol.apply(lambda r: f"{r['Nama']}<br>Change: {r['Change_1D']:+.2f}%", axis=1),
+        ))
+        fig_vol.add_vline(x=2, line_dash='dash', line_color='red', annotation_text='Anomali (2x)')
+        fig_vol.update_layout(height=550, xaxis_title='Volume Ratio vs Avg 20 Hari',
+                              margin=dict(l=10,r=80))
+        st.plotly_chart(fig_vol, use_container_width=True)
+
+        st.subheader('📋 Detail Volume Anomali (≥ 1.5x)')
+        vol_detail = vol_df[vol_df['Vol_Ratio']>=1.5][[
+            'Symbol','Nama','Harga','Change_1D','Vol_Ratio','RSI','Bandar','Rekomendasi','Sinyal'
+        ]].copy()
+        vol_detail['Harga']     = vol_detail['Harga'].apply(lambda x: f'Rp {x:,.0f}')
+        vol_detail['Change_1D'] = vol_detail['Change_1D'].apply(lambda x: f'{x:+.2f}%')
+        vol_detail['Vol_Ratio'] = vol_detail['Vol_Ratio'].apply(lambda x: f'{x:.2f}x')
+        vol_detail['RSI']       = vol_detail['RSI'].apply(lambda x: f'{x:.0f}')
+        st.dataframe(vol_detail, use_container_width=True, hide_index=True, height=400)
+
+    # ── SUB-TAB 4: Bandarmologi ───────────────────────────────────────────
+    with stab4:
+        st.subheader('🕵️ Scanner Bandarmologi — Deteksi Akumulasi & Distribusi Smart Money')
+
+        b1, b2, b3 = st.columns(3)
+        akum_df = df_all[df_all['Bandar']=='AKUMULASI'].sort_values('Score', ascending=False)
+        dist_df = df_all[df_all['Bandar']=='DISTRIBUSI'].sort_values('Score')
+        netral_df = df_all[df_all['Bandar']=='NETRAL']
+
+        with b1: st.metric('🟢 Akumulasi',  len(akum_df))
+        with b2: st.metric('🔴 Distribusi', len(dist_df))
+        with b3: st.metric('🟡 Netral',     len(netral_df))
+
+        bc1, bc2 = st.columns(2)
+        with bc1:
+            st.markdown('### 🟢 Top Akumulasi (Smart Money Masuk)')
+            top_akum = akum_df.head(15)
+            fig_ak = go.Figure(go.Bar(
+                y=top_akum['Symbol'].str.replace('.JK',''),
+                x=top_akum['Score'], orientation='h',
+                marker_color='#00c853',
+                text=top_akum['Score'].apply(lambda x: f'{x}/100'),
+                textposition='inside',
+                hovertext=top_akum['Nama'],
+            ))
+            fig_ak.update_layout(height=450, xaxis_title='Score',
+                                 xaxis_range=[0,100], margin=dict(l=10))
+            st.plotly_chart(fig_ak, use_container_width=True)
+
+            akum_disp = akum_df.head(15)[['Symbol','Nama','Harga','Change_1D','Vol_Ratio','RSI','OBV_Trend','AD_Trend']].copy()
+            akum_disp['Harga']     = akum_disp['Harga'].apply(lambda x: f'Rp {x:,.0f}')
+            akum_disp['Change_1D'] = akum_disp['Change_1D'].apply(lambda x: f'{x:+.2f}%')
+            akum_disp['Vol_Ratio'] = akum_disp['Vol_Ratio'].apply(lambda x: f'{x:.1f}x')
+            akum_disp['RSI']       = akum_disp['RSI'].apply(lambda x: f'{x:.0f}')
+            st.dataframe(akum_disp, use_container_width=True, hide_index=True)
+
+        with bc2:
+            st.markdown('### 🔴 Top Distribusi (Smart Money Keluar)')
+            top_dist = dist_df.head(15)
+            fig_di = go.Figure(go.Bar(
+                y=top_dist['Symbol'].str.replace('.JK',''),
+                x=top_dist['Score'], orientation='h',
+                marker_color='#dd2c00',
+                text=top_dist['Score'].apply(lambda x: f'{x}/100'),
+                textposition='inside',
+                hovertext=top_dist['Nama'],
+            ))
+            fig_di.update_layout(height=450, xaxis_title='Score',
+                                 xaxis_range=[0,100], margin=dict(l=10))
+            st.plotly_chart(fig_di, use_container_width=True)
+
+            dist_disp = dist_df.head(15)[['Symbol','Nama','Harga','Change_1D','Vol_Ratio','RSI','OBV_Trend','AD_Trend']].copy()
+            dist_disp['Harga']     = dist_disp['Harga'].apply(lambda x: f'Rp {x:,.0f}')
+            dist_disp['Change_1D'] = dist_disp['Change_1D'].apply(lambda x: f'{x:+.2f}%')
+            dist_disp['Vol_Ratio'] = dist_disp['Vol_Ratio'].apply(lambda x: f'{x:.1f}x')
+            dist_disp['RSI']       = dist_disp['RSI'].apply(lambda x: f'{x:.0f}')
+            st.dataframe(dist_disp, use_container_width=True, hide_index=True)
+
+    # ── SUB-TAB 5: BUY/SELL Signal ────────────────────────────────────────
+    with stab5:
+        st.subheader('🎯 Ranking BUY / SELL Signal')
+
+        buy_df  = df_all[df_all['Rekomendasi'].isin(['STRONG BUY','BUY'])].sort_values('Score', ascending=False)
+        sell_df = df_all[df_all['Rekomendasi'].isin(['SELL','WEAK SELL'])].sort_values('Score')
+
+        s1, s2 = st.columns(2)
+        with s1:
+            st.markdown('### 🟢 TOP BUY SIGNAL')
+            top_buy = buy_df.head(20)
+            fig_buy = go.Figure(go.Bar(
+                y=top_buy['Symbol'].str.replace('.JK',''),
+                x=top_buy['Score'], orientation='h',
+                marker_color=['#00c853' if r=='STRONG BUY' else '#64dd17'
+                             for r in top_buy['Rekomendasi']],
+                text=top_buy.apply(lambda r: f"{r['Rekomendasi']} ({r['Score']})", axis=1),
+                textposition='inside',
+                hovertext=top_buy['Sinyal'],
+            ))
+            fig_buy.update_layout(height=520, xaxis_title='Score',
+                                  xaxis_range=[0,100], margin=dict(l=10))
+            st.plotly_chart(fig_buy, use_container_width=True)
+
+        with s2:
+            st.markdown('### 🔴 TOP SELL SIGNAL')
+            top_sell = sell_df.head(20)
+            if not top_sell.empty:
+                fig_sell = go.Figure(go.Bar(
+                    y=top_sell['Symbol'].str.replace('.JK',''),
+                    x=top_sell['Score'], orientation='h',
+                    marker_color=['#dd2c00' if r=='SELL' else '#ff6d00'
+                                 for r in top_sell['Rekomendasi']],
+                    text=top_sell.apply(lambda r: f"{r['Rekomendasi']} ({r['Score']})", axis=1),
+                    textposition='inside',
+                    hovertext=top_sell['Sinyal'],
+                ))
+                fig_sell.update_layout(height=520, xaxis_title='Score',
+                                       xaxis_range=[0,100], margin=dict(l=10))
+                st.plotly_chart(fig_sell, use_container_width=True)
+            else:
+                st.info('Tidak ada sinyal SELL dari hasil scan ini.')
+
+        # Tabel buy detail
+        st.markdown('---')
+        st.subheader('📋 Detail Top BUY dengan Level Entry')
+        buy_detail = buy_df.head(20).copy()
+        buy_detail['Entry']     = buy_detail['Harga'].apply(lambda x: f'Rp {x:,.0f}')
+        buy_detail['Stop Loss'] = (buy_detail['Support'] * 0.985).apply(lambda x: f'Rp {x:,.0f}')
+        buy_detail['Target']    = (buy_detail['Resistance'] * 1.02).apply(lambda x: f'Rp {x:,.0f}')
+        buy_detail['Harga']     = buy_detail['Harga'].apply(lambda x: f'Rp {x:,.0f}')
+        buy_detail['Change_1D'] = buy_detail['Change_1D'].apply(lambda x: f'{x:+.2f}%')
+        buy_detail['RSI']       = buy_detail['RSI'].apply(lambda x: f'{x:.0f}')
+        buy_detail['Vol_Ratio'] = buy_detail['Vol_Ratio'].apply(lambda x: f'{x:.1f}x')
+        st.dataframe(buy_detail[[
+            'Symbol','Nama','Harga','Change_1D','RSI','Vol_Ratio',
+            'Bandar','Entry','Stop Loss','Target','Sinyal'
+        ]], use_container_width=True, hide_index=True)
+
+    # ── SUB-TAB 6: AI Analyst (Groq) ──────────────────────────────────────
+    with stab6:
+        st.subheader('🤖 AI Analyst — Powered by Groq (LLaMA / Mixtral)')
+
+        if not groq_key:
+            st.warning(
+                '⚠️ Masukkan **Groq API Key** di bagian atas halaman scanner untuk mengaktifkan fitur AI.\n\n'
+                'API key gratis di [console.groq.com](https://console.groq.com)'
+            )
+        else:
+            # ── Analisis pasar keseluruhan ─────────────────────────────
+            st.markdown('### 🌡️ Analisis Pasar Keseluruhan (Market Overview)')
+
+            col_ai1, col_ai2 = st.columns([1, 3])
+            with col_ai1:
+                run_market_ai = st.button('🔍 Analisis Pasar Sekarang', use_container_width=True, type='primary')
+            with col_ai2:
+                if 'ai_market_analysis' in st.session_state:
+                    st.success('✅ Analisis pasar sudah tersedia (scroll ke bawah)')
+
+            if run_market_ai:
+                with st.spinner('🤖 AI sedang menganalisis kondisi pasar...'):
+                    prompt  = build_scanner_prompt(df_all)
+                    ai_resp = groq_ai_analyze(prompt, groq_key, groq_model)
+                    st.session_state['ai_market_analysis'] = ai_resp
+
+            if 'ai_market_analysis' in st.session_state:
+                st.markdown('<div class="info-box">', unsafe_allow_html=True)
+                st.markdown(st.session_state['ai_market_analysis'])
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            st.markdown('---')
+
+            # ── Analisis saham individual ──────────────────────────────
+            st.markdown('### 🎯 Analisis AI untuk Saham Individual')
+            st.info('Pilih saham dari hasil scanner untuk mendapatkan analisis AI mendalam')
+
+            ai_cols = st.columns([2, 1])
+            with ai_cols[0]:
+                sel_sym = st.selectbox(
+                    'Pilih saham:',
+                    options=df_all['Symbol'].tolist(),
+                    format_func=lambda x: f"{x} — {df_all[df_all['Symbol']==x]['Nama'].values[0]} "
+                                         f"(Score: {df_all[df_all['Symbol']==x]['Score'].values[0]}, "
+                                         f"{df_all[df_all['Symbol']==x]['Rekomendasi'].values[0]})",
+                )
+            with ai_cols[1]:
+                run_stock_ai = st.button('🤖 Analisis Saham Ini', use_container_width=True, type='primary')
+
+            if run_stock_ai and sel_sym:
+                row = df_all[df_all['Symbol'] == sel_sym].iloc[0]
+                with st.spinner(f'🤖 AI menganalisis {sel_sym}...'):
+                    prompt   = build_single_stock_prompt(row)
+                    ai_stock = groq_ai_analyze(prompt, groq_key, groq_model)
+
+                st.markdown(f'#### Analisis AI untuk {sel_sym} — {row["Nama"]}')
+
+                # Metric ringkas di atas
+                mc1,mc2,mc3,mc4 = st.columns(4)
+                with mc1: st.metric('Score', f"{row['Score']}/100")
+                with mc2: st.metric('RSI',   f"{row['RSI']:.1f}")
+                with mc3: st.metric('Vol Ratio', f"{row['Vol_Ratio']:.2f}x")
+                with mc4: st.metric('Bandarmologi', row['Bandar'])
+
+                st.markdown('<div class="success-box">', unsafe_allow_html=True)
+                st.markdown(ai_stock)
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            # ── Quick scan 5 saham teratas ─────────────────────────────
+            st.markdown('---')
+            st.markdown('### ⚡ Analisis Cepat Top 5 BUY Signal')
+            if st.button('🚀 Analisis Top 5 Sekaligus', use_container_width=False):
+                top5 = df_all[df_all['Rekomendasi'].isin(['STRONG BUY','BUY'])].nlargest(5,'Score')
+                if top5.empty:
+                    st.info('Tidak ada sinyal BUY dari hasil scan.')
+                else:
+                    for _, row in top5.iterrows():
+                        with st.spinner(f'Menganalisis {row["Symbol"]}...'):
+                            p  = build_single_stock_prompt(row)
+                            ar = groq_ai_analyze(p, groq_key, groq_model)
+                        with st.expander(
+                            f"{row['Rec_Color']} {row['Symbol']} — {row['Nama']} "
+                            f"(Score: {row['Score']}, RSI: {row['RSI']:.0f})"
+                        ):
+                            st.markdown(ar)
+                        time.sleep(1)  # jeda antar request Groq
+
+
+# ============================================================================
 # MAIN APPLICATION
 # ============================================================================
 
@@ -1580,13 +2481,14 @@ def main():
             if df is not None and len(df) > 20:
                 df = calculate_indicators(df)
                 
-                tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+                tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
                     '📊 Technical Analysis',
                     '🎯 Strategy Signals',
                     '🕵️ Bandarmologi',
                     '🏦 Broker Summary',
                     '💰 Transaction Analysis',
-                    '🔮 Hybrid Forecast'
+                    '🔮 Hybrid Forecast',
+                    '🔭 Stock Scanner',
                 ])
                 
                 # ================================================================
@@ -2088,6 +2990,12 @@ def main():
                     }
                     st.table(pd.DataFrame(matrix_data))
                 
+                # ================================================================
+                # TAB 7: STOCK SCANNER
+                # ================================================================
+                with tab7:
+                    render_scanner_tab()
+
                 # Download data
                 st.markdown('---')
                 csv = df.to_csv().encode('utf-8')
@@ -2112,9 +3020,14 @@ def main():
                     st.rerun()
     
     else:
-        # Welcome Screen
-        st.info('👈 Pilih strategi dan saham di sidebar, kemudian klik "Analisis Lengkap"')
-        
+        # Welcome Screen — Scanner bisa diakses langsung dari sini
+        st.info('👈 Pilih strategi dan saham di sidebar, kemudian klik "Analisis Lengkap" — atau gunakan **🔭 Stock Scanner** di bawah untuk scan banyak saham sekaligus!')
+
+        st.markdown('---')
+
+        # Scanner langsung bisa dipakai tanpa klik analisis dulu
+        render_scanner_tab()
+
         st.markdown('---')
         st.subheader(f'✨ {len(SAHAM_INDONESIA)} Saham Tersedia — Fitur Utama Aplikasi')
         
