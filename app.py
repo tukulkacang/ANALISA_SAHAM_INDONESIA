@@ -1844,16 +1844,26 @@ def render_scanner_tab():
         unsafe_allow_html=True
     )
 
-    # ── Groq API Key ───────────────────────────────────────────────────────
-    with st.expander('🤖 Pengaturan AI Analyst (Groq) — Klik untuk expand', expanded=False):
-        st.markdown(
-            "Dapatkan API key **GRATIS** di [console.groq.com](https://console.groq.com) → "
-            "API Keys → Create API Key"
-        )
-        groq_key = st.text_input(
-            'Groq API Key:', type='password',
+    # ── Groq API Key — auto-load dari Streamlit Secrets ───────────────────
+    # Coba baca dari secrets dulu, fallback ke input manual
+    groq_key_from_secrets = st.secrets.get("GROQ_API_KEY", "")
+
+    with st.expander('🤖 Pengaturan AI Analyst (Groq)', expanded=not bool(groq_key_from_secrets)):
+        if groq_key_from_secrets:
+            st.success('✅ API Key terdeteksi otomatis dari Streamlit Secrets!')
+            st.info('Kamu tidak perlu input manual. API key sudah aktif.')
+        else:
+            st.warning('API key belum ditemukan di Secrets. Masukkan manual di bawah, atau tambahkan GROQ_API_KEY di Streamlit Secrets.')
+            st.markdown(
+                "Dapatkan API key **GRATIS** di [console.groq.com](https://console.groq.com) → "
+                "API Keys → Create API Key"
+            )
+
+        groq_key_manual = st.text_input(
+            'Groq API Key (manual — opsional jika sudah di Secrets):',
+            type='password',
             placeholder='gsk_xxxxxxxxxxxxxxxxxxxx',
-            help='API key Groq gratis, tidak perlu kartu kredit'
+            help='Kosongkan jika sudah set GROQ_API_KEY di Streamlit Secrets'
         )
         groq_model = st.selectbox('Model AI:', [
             'llama3-8b-8192',
@@ -1862,11 +1872,8 @@ def render_scanner_tab():
             'gemma2-9b-it',
         ], help='llama3-70b lebih cerdas tapi sedikit lebih lambat')
 
-        if groq_key:
-            st.success('✅ API Key tersimpan untuk sesi ini')
-        else:
-            st.warning('⚠️ Tanpa API key, fitur AI Analyst tidak aktif (scanner tetap bisa dipakai)')
-
+    # Prioritas: manual input > secrets
+    groq_key = groq_key_manual.strip() if groq_key_manual.strip() else groq_key_from_secrets
     st.markdown('---')
 
     # ── Pengaturan scanner ─────────────────────────────────────────────────
