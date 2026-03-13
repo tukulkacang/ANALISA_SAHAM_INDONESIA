@@ -170,112 +170,696 @@ def save_manual_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f)
 
-# Daftar saham Indonesia (lengkap)
+# Daftar saham Indonesia (LENGKAP - gabungan semua sumber)
 SAHAM_INDONESIA = {
+    # === BLUE CHIP & LQ45 ===
     'BBCA.JK': 'Bank Central Asia',
-    'BBRI.JK': 'Bank Rakyat Indonesia',
-    'BMRI.JK': 'Bank Mandiri',
+    'BBRI.JK': 'Bank Rakyat Indonesia (Persero) Tbk',
+    'BMRI.JK': 'Bank Mandiri (Persero) Tbk',
     'BBNI.JK': 'Bank Negara Indonesia',
-    'TLKM.JK': 'Telkom Indonesia',
+    'TLKM.JK': 'Telkom Indonesia (Persero) Tbk',
     'ASII.JK': 'Astra International',
-    'UNVR.JK': 'Unilever Indonesia',
-    'PGAS.JK': 'Perusahaan Gas Negara',
-    'INDF.JK': 'Indofood Sukses Makmur',
-    'KLBF.JK': 'Kalbe Farma',
-    'GGRM.JK': 'Gudang Garam',
-    'HMSP.JK': 'H.M. Sampoerna',
-    'ICBP.JK': 'Indofood CBP',
-    'MYOR.JK': 'Mayora Indah',
-    'SMGR.JK': 'Semen Indonesia',
-    'EXCL.JK': 'XL Axiata',
-    'ISAT.JK': 'Indosat Ooredoo',
+    'UNVR.JK': 'Unilever Indonesia Tbk',
+    'PGAS.JK': 'Perusahaan Gas Negara (Persero) Tbk',
+    'INDF.JK': 'Indofood Sukses Makmur Tbk',
+    'KLBF.JK': 'Kalbe Farma Tbk',
+    'GGRM.JK': 'Gudang Garam Tbk',
+    'HMSP.JK': 'H.M. Sampoerna Tbk',
+    'ICBP.JK': 'Indofood CBP Sukses Makmur Tbk',
+    'MYOR.JK': 'Mayora Indah Tbk',
+    'SMGR.JK': 'Semen Indonesia (Persero) Tbk',
+    'EXCL.JK': 'XL Axiata Tbk',
+    'ISAT.JK': 'Indosat Ooredoo Hutchison Tbk',
     'PTBA.JK': 'Bukit Asam',
     'ADRO.JK': 'Adaro Energy',
-    'ITMG.JK': 'Indo Tambangraya Megah',
+    'ITMG.JK': 'Indo Tambangraya Megah Tbk',
     'ANTM.JK': 'Aneka Tambang',
-    'INKP.JK': 'Indah Kiat Pulp',
-    'FREN.JK': 'Smartfren Telecom',
-    'PWON.JK': 'Pakuwon Jati',
-    'CTRA.JK': 'Ciputra Development',
-    'SMRA.JK': 'Summarecon Agung',
-    'BSDE.JK': 'Bumi Serpong Damai',
-    'JPFA.JK': 'Japfa Comfeed',
-    'CPIN.JK': 'Charoen Pokphand Indonesia',
-    'MAIN.JK': 'Malindo Feedmill',
-    'AUTO.JK': 'Astra Otoparts',
-    'TBIG.JK': 'Tower Bersama Infrastructure',
-    'TOWR.JK': 'Sarana Menara Nusantara',
-    'LINK.JK': 'Link Net',
-    'EMTK.JK': 'Elang Mahkota Teknologi',
-    'BUMI.JK': 'Bumi Resources',
-    'BRPT.JK': 'Barito Pacific',
-    'ESSA.JK': 'ESSA Industries Indonesia',
+    'INKP.JK': 'Indah Kiat Pulp & Paper Tbk',
+    'UNTR.JK': 'United Tractors Tbk',
+    'BYAN.JK': 'Bayan Resources Tbk',
     'TPIA.JK': 'Chandra Asri Petrochemical',
     'BRIS.JK': 'Bank Syariah Indonesia',
     'ARTO.JK': 'Bank Jago',
-    'GOTO.JK': 'GoTo Gojek Tokopedia',
-    'BUKA.JK': 'Bukalapak.com',
-    'AMRT.JK': 'Alfamart',
-    'MPPA.JK': 'Matahari Putra Prima',
-    'LPPF.JK': 'Matahari Department Store',
-    'ACES.JK': 'Ace Hardware Indonesia',
-    'ERAA.JK': 'Erajaya Swasembada',
-    'RALS.JK': 'Ramayana Lestari Sentosa',
-    'MAPI.JK': 'Mitra Adiperkasa',
-    'MNCN.JK': 'Media Nusantara Citra',
-    'SCMA.JK': 'Surya Citra Media',
-    'VIVA.JK': 'Visi Media Asia',
-    'FILM.JK': 'MD Pictures',
-    'DOOH.JK': 'Era Media Informasi',
-    'MARK.JK': 'Mark Dynamics Indonesia',
-    'HRUM.JK': 'Harum Energy',
-    'TOBA.JK': 'Toba Bara Sejahtera',
-    'MBAP.JK': 'Mitrabara Adiperdana',
-    'DMND.JK': 'Diamond Food Indonesia',
-    'CLEO.JK': 'Sariguna Primatirta',
-    'AQUA.JK': 'Aqua Golden Mississippi',
-    'MLBI.JK': 'Multi Bintang Indonesia',
-    'STTP.JK': 'Siantar Top',
-    'UFOE.JK': 'UFO Elektronika',
-    'HEAL.JK': 'Medikaloka Hermina',
-    'MIKA.JK': 'Mitra Keluarga Karyasehat',
-    'SILO.JK': 'Siloam International Hospitals',
-    'PRDA.JK': 'Prima Dahana',
-    'OMED.JK': 'Jayamas Medica Industri',
-    'DVLA.JK': 'Darya-Varia Laboratoria',
-    'INAF.JK': 'Indofarma',
-    'KAEF.JK': 'Kimia Farma',
-    'PEHA.JK': 'Phapros',
-    'RSGK.JK': 'Kedoya Adyaraya',
-    'SAME.JK': 'Sarana Meditama Metropolitan',
-    'MTMH.JK': 'Murni Sadar Tbk',
-    'CMRY.JK': 'Cisarua Mountain Dairy',
-    'WOOD.JK': 'Integra Indocabinet',
-    'AVIA.JK': 'Avia Avian',
-    'SPMA.JK': 'Suparma',
-    'FASW.JK': 'Fajar Surya Wisesa',
-    'TKIM.JK': 'Pabrik Kertas Tjiwi Kimia',
-    'BLTZ.JK': 'Graha Layar Prima',
-    'BOLT.JK': 'Garuda Metalindo',
-    'KBLI.JK': 'KMI Wire and Cable',
-    'SMCB.JK': 'Solusi Bangun Indonesia',
-    'INTP.JK': 'Indocement Tunggal Prakarsa',
-    'WSBP.JK': 'Waskita Beton Precast',
-    'WIKA.JK': 'Wijaya Karya',
+    'AUTO.JK': 'Astra Otoparts',
+    'TBIG.JK': 'Tower Bersama Infrastructure',
+    'TOWR.JK': 'Sarana Menara Nusantara',
     'ADHI.JK': 'Adhi Karya',
-    'PTPP.JK': 'PP (Persero)',
     'WSKT.JK': 'Waskita Karya',
-    'BBTN.JK': 'Bank Tabungan Negara',
-    'BJBR.JK': 'Bank BJB',
-    'BJTM.JK': 'Bank Jatim',
-    'BANK.JK': 'Bank MNC Internasional',
-    'AGRO.JK': 'Bank Raya Indonesia',
-    'SDRA.JK': 'Bank Woori Saudara',
-    'NISP.JK': 'Bank OCBC NISP',
-    'MAYA.JK': 'Bank Mayapada Internasional',
-    'MCAS.JK': 'M Cash Integrasi',
-    'UNTR.JK': 'United Tractors',
-    'BYAN.JK': 'Bayan Resources'
+    'WSBP.JK': 'Waskita Beton Precast',
+    'KAEF.JK': 'Kimia Farma',
+    'RSGK.JK': 'Kedoya Adyaraya',
+    'DMND.JK': 'Diamond Food Indonesia',
+    'AQUA.JK': 'Aqua Golden Mississippi',
+    'DOOH.JK': 'Era Media Informasi',
+    'MNCN.JK': 'Media Nusantara Citra',
+    # === A ===
+    'ACES.JK': 'Ace Hardware Indonesia',
+    'AGAR.JK': 'Asia Sejahtera Mina Tbk',
+    'AGII.JK': 'Aneka Gas Industri Tbk',
+    'AGRO.JK': 'Bank Raya Indonesia Tbk',
+    'AIMS.JK': 'Akbar Indo Makmur Stimec Tbk',
+    'AKPI.JK': 'Argha Karya Prima Industry Tbk',
+    'AKRA.JK': 'AKR Corporindo Tbk',
+    'AKSI.JK': 'Maming Enam Sembilan Mineral Tbk',
+    'ALDO.JK': 'Alkindo Naratama Tbk',
+    'ALKA.JK': 'Alakasa Industrindo Tbk',
+    'ALMI.JK': 'Alumindo Light Metal Industry Tbk',
+    'ALTO.JK': 'Tri Banyan Tirta Tbk',
+    'AMAG.JK': 'Asuransi Multi Artha Guna Tbk',
+    'AMAN.JK': 'Makmur Berkah Amanda Tbk',
+    'AMFG.JK': 'Asahimas Flat Glass Tbk',
+    'AMIN.JK': 'Ateliers Mecaniques D Indonesie Tbk',
+    'AMRT.JK': 'Alfamart Tbk',
+    'ANDI.JK': 'Andira Agro Tbk',
+    'ANJT.JK': 'Austindo Nusantara Jaya Tbk',
+    'ANTO.JK': 'Aneka Tambang Tbk',
+    'APEX.JK': 'Apexindo Pratama Duta Tbk',
+    'APIC.JK': 'Pacific Strategic Financial Tbk',
+    'APII.JK': 'Arita Prima Indonesia Tbk',
+    'APLI.JK': 'Asiaplast Industries Tbk',
+    'APLN.JK': 'Agung Podomoro Land Tbk',
+    'ARGA.JK': 'Argo Pantes Tbk',
+    'ARII.JK': 'Atlas Resources Tbk',
+    'ARKA.JK': 'Arkha Jayanti Persada Tbk',
+    'ARNA.JK': 'Arwana Citramulia Tbk',
+    'ARTA.JK': 'Arthavest Tbk',
+    'ASBI.JK': 'Asuransi Bintang Tbk',
+    'ASDM.JK': 'Asuransi Dayin Mitra Tbk',
+    'ASGR.JK': 'Astra Graphia Tbk',
+    'ASJT.JK': 'Asuransi Jasa Tania Tbk',
+    'ASMI.JK': 'Asuransi Asmara Nusantara Tbk',
+    'ASPI.JK': 'Andalan Sakti Primaindo Tbk',
+    'ASRM.JK': 'Asuransi Ramayana Tbk',
+    'ATAP.JK': 'Trimitra Prawara Goldland Tbk',
+    'ATPK.JK': 'Perusahaan Perseroan (Persero) Aneka Tambang Tbk',
+    'AUST.JK': 'Austin Electric Indonesia Tbk',
+    'AVIA.JK': 'Avia Avian Tbk',
+    'AYLS.JK': 'Agro Yasa Lestari Tbk',
+    # === B ===
+    'BABP.JK': 'Bank MNC Internasional Tbk',
+    'BACA.JK': 'Bank Capital Indonesia Tbk',
+    'BAJA.JK': 'Sarana Mitra Luas Tbk',
+    'BALI.JK': 'Bali United Tbk',
+    'BANK.JK': 'Bank MNC Internasional Tbk',
+    'BATA.JK': 'Sepatu Bata Tbk',
+    'BAYU.JK': 'Bayu Buana Tbk',
+    'BBHI.JK': 'Bank Harda Internasional Tbk',
+    'BBKP.JK': 'Bank KB Bukopin Tbk',
+    'BBLD.JK': 'Buana Finance Tbk',
+    'BBMD.JK': 'Bank Mestika Dharma Tbk',
+    'BBMI.JK': 'Bank Bumi Arta Tbk',
+    'BBRM.JK': 'Pelayaran Nasional Bina Buana Raya Tbk',
+    'BBTN.JK': 'Bank Tabungan Negara (Persero) Tbk',
+    'BBYB.JK': 'Bank Hibank Indonesia Tbk',
+    'BCAP.JK': 'MNC Kapital Indonesia Tbk',
+    'BCIC.JK': 'Bank JTrust Indonesia Tbk',
+    'BCIP.JK': 'Bumi Citra Permai Tbk',
+    'BDMN.JK': 'Bank Danamon Indonesia Tbk',
+    'BEKS.JK': 'Bank Pembangunan Daerah Banten Tbk',
+    'BELL.JK': 'Trisula Textile Industries Tbk',
+    'BELS.JK': 'Global Digital Niaga Tbk',
+    'BEST.JK': 'Bekasi Fajar Industrial Estate Tbk',
+    'BFIN.JK': 'BFI Finance Indonesia Tbk',
+    'BGTG.JK': 'Bank Ganesha Tbk',
+    'BHAT.JK': 'Bhinneka Life Support Tbk',
+    'BHIT.JK': 'MNC Asia Holding Tbk',
+    'BIKA.JK': 'Binakarya Jaya Abadi Tbk',
+    'BIMA.JK': 'Primarindo Asia Infrastructure Tbk',
+    'BINA.JK': 'Bank Ina Perdana Tbk',
+    'BIPP.JK': 'Bhuwanatala Indah Permai Tbk',
+    'BIRD.JK': 'Blue Bird Tbk',
+    'BISI.JK': 'BISI International Tbk',
+    'BJBR.JK': 'Bank Pembangunan Daerah Jawa Barat dan Banten Tbk',
+    'BJTM.JK': 'Bank Pembangunan Daerah Jawa Timur Tbk',
+    'BKDP.JK': 'Bukit Darmo Property Tbk',
+    'BKSL.JK': 'Sentul City Tbk',
+    'BKSW.JK': 'Bank QNB Indonesia Tbk',
+    'BLTA.JK': 'Berlian Laju Tanker Tbk',
+    'BLTZ.JK': 'Graha Layar Prima Tbk',
+    'BMAS.JK': 'Bank Maspion Indonesia Tbk',
+    'BMSR.JK': 'Bintang Mitra Semestari Tbk',
+    'BMTR.JK': 'Bumi Serpong Damai Tbk',
+    'BNBA.JK': 'Bank Bumi Arta Tbk',
+    'BNBR.JK': 'Bakrie & Brothers Tbk',
+    'BNGA.JK': 'Bank CIMB Niaga Tbk',
+    'BNII.JK': 'Bank Maybank Indonesia Tbk',
+    'BNLI.JK': 'Bank Permata Tbk',
+    'BOBA.JK': 'Boba Inc Tbk',
+    'BOGA.JK': 'Bintang Oto Global Tbk',
+    'BOLA.JK': 'Mahaka Media Tbk',
+    'BOLT.JK': 'Garuda Metalindo Tbk',
+    'BORN.JK': 'Borneo Lumbung Energy & Metal Tbk',
+    'BOSS.JK': 'Borneo Olah Sarana Sukses Tbk',
+    'BPII.JK': 'Bali Penumbral Lestari Raya Tbk',
+    'BRAM.JK': 'Bramhani Asset Tbk',
+    'BRNA.JK': 'Berlina Tbk',
+    'BRND.JK': 'Brandzili Tbk',
+    'BRNG.JK': 'Baron Nusantara Abadi Tbk',
+    'BRPI.JK': 'Papa Alfa Indonesia Tbk',
+    'BRPT.JK': 'Barito Pacific Tbk',
+    'BSDE.JK': 'Bumi Serpong Damai Tbk',
+    'BSIM.JK': 'Bank Sinarmas Tbk',
+    'BSML.JK': 'Bisnis Indonesia Mediatama Tbk',
+    'BSSR.JK': 'Baramulti Suksessarana Tbk',
+    'BSWD.JK': 'Bank of India Indonesia Tbk',
+    'BTEK.JK': 'Bumi Teknokultura Unggul Tbk',
+    'BTON.JK': 'Betonjaya Manunggal Tbk',
+    'BTPN.JK': 'Bank BTPN Tbk',
+    'BTPS.JK': 'Bank BTPN Syariah Tbk',
+    'BUAH.JK': 'Alamandara Buanalestari Tbk',
+    'BUDI.JK': 'Budi Starch & Sweetener Tbk',
+    'BUKA.JK': 'Bukalapak.com Tbk',
+    'BULL.JK': 'Buana Lintas Lautan Tbk',
+    'BUMI.JK': 'Bumi Resources Tbk',
+    'BUVA.JK': 'Bukit Uluwatu Villa Tbk',
+    'BVIC.JK': 'Bank Victoria International Tbk',
+    'BWFG.JK': 'Bank Woori Saudara Indonesia 1906 Tbk',
+    # === C ===
+    'CAKK.JK': 'Cahayaputra Asa Keramik Tbk',
+    'CAMP.JK': 'Campina Ice Cream Industry Tbk',
+    'CANI.JK': 'Capitol Nusantara Indonesia Tbk',
+    'CARE.JK': 'Metro Healthcare Indonesia Tbk',
+    'CARS.JK': 'Indonesia Prima Property Tbk',
+    'CASA.JK': 'Casa Estrela Tbk',
+    'CASH.JK': 'Cashlez Worldwide Indonesia Tbk',
+    'CASS.JK': 'Cardig Aero Services Tbk',
+    'CATS.JK': 'Citra Tubindo Tbk',
+    'CBMF.JK': 'Cobrainer Indonesia Tbk',
+    'CCSI.JK': 'Communication Cable Systems Indonesia Tbk',
+    'CEKA.JK': 'Wilmar Cahaya Indonesia Tbk',
+    'CENT.JK': 'Centratama Telekomunikasi Indonesia Tbk',
+    'CEPU.JK': 'Citra Putra Kebun Nusantara Tbk',
+    'CFIN.JK': 'Clipan Finance Indonesia Tbk',
+    'CINT.JK': 'Chitose Internasional Tbk',
+    'CITA.JK': 'Cita Mineral Investindo Tbk',
+    'CLAY.JK': 'Citra Putra Realty Tbk',
+    'CLEO.JK': 'Sariguna Primatirta Tbk',
+    'CLPI.JK': 'Colorpak Indonesia Tbk',
+    'CMNP.JK': 'Citra Marga Nusaphala Persada Tbk',
+    'CMNT.JK': 'Cemindo Gemilang Tbk',
+    'CMPI.JK': 'Citra Multimedia Indonesia Tbk',
+    'CMRY.JK': 'Cisarua Mountain Dairy Tbk',
+    'CNKO.JK': 'Exploitasi Energi Indonesia Tbk',
+    'CNTX.JK': 'Century Textile Industry Tbk',
+    'COCO.JK': 'Coco Indonesia Investama Tbk',
+    'CPIN.JK': 'Charoen Pokphand Indonesia Tbk',
+    'CPRI.JK': 'Capri Nusa Satu Tbk',
+    'CPRO.JK': 'Central Proteina Prima Tbk',
+    'CSAP.JK': 'Catur Sentosa Adiprana Tbk',
+    'CSIS.JK': 'Cahayasakti Investindo Sukses Tbk',
+    'CSMI.JK': 'Cipta Selera Murni Tbk',
+    'CSRA.JK': 'Cisadane Sawit Raya Tbk',
+    'CTBN.JK': 'Citra Tubindo Tbk',
+    'CTRA.JK': 'Ciputra Development Tbk',
+    'CTTH.JK': 'Citatah Tbk',
+    # === D ===
+    'DADA.JK': 'Dada Indonesia Tbk',
+    'DART.JK': 'Duta Anggada Realty Tbk',
+    'DAYA.JK': 'Duta Intidaya Tbk',
+    'DEAL.JK': 'Dewata Freightinternational Tbk',
+    'DEFI.JK': 'Danasupra Erapacific Tbk',
+    'DEPO.JK': 'Caturkarda Depo Bangunan Tbk',
+    'DEWI.JK': 'Dewi Shri Farmindo Tbk',
+    'DGIK.JK': 'Nusa Konstruksi Enjiniring Tbk',
+    'DGNS.JK': 'Diagnos Laboratorium Utama Tbk',
+    'DILD.JK': 'Intiland Development Tbk',
+    'DIVA.JK': 'Distribusi Voucher Nusantara Tbk',
+    'DKFT.JK': 'Central Omega Resources Tbk',
+    'DLTA.JK': 'Delta Djakarta Tbk',
+    'DMAS.JK': 'Puradelta Lestari Tbk',
+    'DOID.JK': 'Delta Dunia Makmur Tbk',
+    'DPNS.JK': 'Duta Pertiwi Nusantara Tbk',
+    'DRMA.JK': 'Dharma Polimetal Tbk',
+    'DSFI.JK': 'Dharma Samudera Fishing Industries Tbk',
+    'DSNG.JK': 'Dharma Satya Nusantara Tbk',
+    'DSSA.JK': 'Dian Swastatika Sentosa Tbk',
+    'DUTI.JK': 'Duta Pertiwi Tbk',
+    'DVLA.JK': 'Darya-Varia Laboratoria Tbk',
+    'DYAN.JK': 'Dyandra Media International Tbk',
+    # === E ===
+    'EAST.JK': 'Eastparc Hotel Tbk',
+    'ECII.JK': 'Electronic City Indonesia Tbk',
+    'EDGE.JK': 'Indointernet Tbk',
+    'EKAD.JK': 'Ekadharma International Tbk',
+    'ELSA.JK': 'Elnusa Tbk',
+    'ELTY.JK': 'Bakrieland Development Tbk',
+    'EMDE.JK': 'Megapolitan Developments Tbk',
+    'EMTK.JK': 'Elang Mahkota Teknologi Tbk',
+    'ENRG.JK': 'Energi Mega Persada Tbk',
+    'ENVY.JK': 'Envy Technologies Indonesia Tbk',
+    'EPMT.JK': 'Enseval Putera Megatrading Tbk',
+    'ERAA.JK': 'Erajaya Swasembada Tbk',
+    'ERTX.JK': 'Eratex Djaya Tbk',
+    'ESIP.JK': 'Sinergi Inti Plastindo Tbk',
+    'ESSA.JK': 'ESSA Industries Indonesia Tbk',
+    'ESTI.JK': 'Esta Multi Usaha Tbk',
+    'ETWA.JK': 'Eterindo Wahanatama Tbk',
+    # === F ===
+    'FAPA.JK': 'FAP Agri Tbk',
+    'FASW.JK': 'Fajar Surya Wisesa Tbk',
+    'FILM.JK': 'MD Pictures Tbk',
+    'FIMP.JK': 'Fimperkasa Utama Tbk',
+    'FIRE.JK': 'Alfa Energi Investama Tbk',
+    'FISH.JK': 'FKS Multi Agro Tbk',
+    'FMII.JK': 'Fortune Mate Indonesia Tbk',
+    'FOOD.JK': 'Sentra Food Indonesia Tbk',
+    'FORZ.JK': 'Forza Land Indonesia Tbk',
+    'FPNI.JK': 'Lotte Chemical Titan Nusantara Tbk',
+    'FREN.JK': 'Smartfren Telecom Tbk',
+    'FUJI.JK': 'Fuji Finance Indonesia Tbk',
+    # === G ===
+    'GAMA.JK': 'Aksara Global Development Tbk',
+    'GDST.JK': 'Gunawan Dianjaya Steel Tbk',
+    'GDYR.JK': 'Goodyear Indonesia Tbk',
+    'GEMA.JK': 'Gema Grahasarana Tbk',
+    'GEMS.JK': 'Golden Energy Mines Tbk',
+    'GGRP.JK': 'Gunung Raja Paksi Tbk',
+    'GHON.JK': 'Gihon Telekomunikasi Indonesia Tbk',
+    'GIAA.JK': 'Garuda Indonesia (Persero) Tbk',
+    'GJTL.JK': 'Gajah Tunggal Tbk',
+    'GLOB.JK': 'Globe Kita Terang Tbk',
+    'GLVA.JK': 'Galva Technologies Tbk',
+    'GMFI.JK': 'Garuda Maintenance Facility Aero Asia Tbk',
+    'GMTD.JK': 'Gowa Makassar Tourism Development Tbk',
+    'GOLD.JK': 'Visi Telekomunikasi Indonesia Tbk',
+    'GOLL.JK': 'Golden Plantation Tbk',
+    'GOOD.JK': 'Sariguna Primatirta Tbk',
+    'GOTO.JK': 'GoTo Gojek Tokopedia Tbk',
+    'GPRA.JK': 'Perdana Gapuraprima Tbk',
+    'GPSO.JK': 'Geoprima Solusi Tbk',
+    'GSMF.JK': 'Equity Development Investment Tbk',
+    'GTBO.JK': 'Garda Tujuh Buana Tbk',
+    'GTRA.JK': 'Grahaprima Suksesmandiri Tbk',
+    'GTSI.JK': 'GTS Internasional Tbk',
+    'GWSA.JK': 'Gunawan Sawit Tbk',
+    'GZCO.JK': 'Gozco Plantations Tbk',
+    # === H ===
+    'HEAL.JK': 'Medikaloka Hermina Tbk',
+    'HELI.JK': 'Jaya Trishindo Tbk',
+    'HERO.JK': 'Hero Supermarket Tbk',
+    'HEXA.JK': 'Hexindo Adiperkasa Tbk',
+    'HILL.JK': 'Hillcon Tbk',
+    'HITS.JK': 'Humpuss Intermoda Transportasi Tbk',
+    'HKMU.JK': 'Hakim Putra Karya Tbk',
+    'HOPE.JK': 'Harianjaya Kumala Tbk',
+    'HOTL.JK': 'Saraswati Griya Lestari Tbk',
+    'HRUM.JK': 'Harum Energy Tbk',
+    'HRTA.JK': 'Hartadinata Abadi Tbk',
+    # === I ===
+    'IBFN.JK': 'Intan Baru Prana Tbk',
+    'IBST.JK': 'Inti Bangun Sejahtera Tbk',
+    'ICON.JK': 'Island Concepts Indonesia Tbk',
+    'IDEA.JK': 'Idea Indonesia Akademi Tbk',
+    'IDPR.JK': 'Indonesia Pondasi Raya Tbk',
+    'IFII.JK': 'Indonesia Fibreboard Industry Tbk',
+    'IFSH.JK': 'Ifishdeco Tbk',
+    'IGAR.JK': 'Multi Indocitra Tbk',
+    'IIKP.JK': 'Inti Agri Resources Tbk',
+    'IKAI.JK': 'Intikeramik Alamasri Industri Tbk',
+    'IKBI.JK': 'Sumi Indo Kabel Tbk',
+    'IMAS.JK': 'Indomobil Sukses Internasional Tbk',
+    'IMJS.JK': 'Indomobil Multi Jasa Tbk',
+    'IMPC.JK': 'Impack Pratama Industri Tbk',
+    'INAF.JK': 'Indofarma Tbk',
+    'INAI.JK': 'Indal Aluminium Industry Tbk',
+    'INCI.JK': 'Intanwijaya Internasional Tbk',
+    'INDO.JK': 'Royalindo Investa Wijaya Tbk',
+    'INDR.JK': 'Indo-Rama Synthetics Tbk',
+    'INDS.JK': 'Indospring Tbk',
+    'INDX.JK': 'Tanah Laut Tbk',
+    'INDY.JK': 'Indika Energy Tbk',
+    'INPC.JK': 'Bank Artha Graha Internasional Tbk',
+    'INPP.JK': 'Indonesian Paradise Property Tbk',
+    'INTA.JK': 'Intraco Penta Tbk',
+    'INTD.JK': 'Inter Delta Tbk',
+    'INTP.JK': 'Indocement Tunggal Prakarsa Tbk',
+    'IPCC.JK': 'Indonesia Kendaraan Terminal Tbk',
+    'IPCM.JK': 'Jasa Armada Indonesia Tbk',
+    'IPOL.JK': 'Indopoly Swakarsa Industry Tbk',
+    'IPPE.JK': 'Indo Pureco Pratama Tbk',
+    'IPTV.JK': 'MNC Vision Networks Tbk',
+    'IRRA.JK': 'Itama Ranoraya Tbk',
+    'ISSP.JK': 'Steel Pipe Industry of Indonesia Tbk',
+    'ITMA.JK': 'Sumber Energi Andalan Tbk',
+    # === J ===
+    'JAST.JK': 'Jasnita Telekomindo Tbk',
+    'JAWA.JK': 'Jaya Agra Wattie Tbk',
+    'JAYA.JK': 'Armada Berjaya Trans Tbk',
+    'JECC.JK': 'Jembo Cable Company Tbk',
+    'JGLE.JK': 'Graha Layar Prima Tbk',
+    'JIHD.JK': 'Jakarta International Hotels & Development Tbk',
+    'JKON.JK': 'Jaya Konstruksi Manggala Pratama Tbk',
+    'JMAS.JK': 'Asuransi Jiwa Syariah Jasa Mitra Abadi Tbk',
+    'JPFA.JK': 'Japfa Comfeed Indonesia Tbk',
+    'JRPT.JK': 'Jaya Real Property Tbk',
+    'JSKY.JK': 'Sky Aviation Tbk',
+    'JSMR.JK': 'Jasa Marga (Persero) Tbk',
+    'JSPT.JK': 'Jakarta Setiabudi Internasional Tbk',
+    'JTPE.JK': 'Jasuindo Tiga Perkasa Tbk',
+    # === K ===
+    'KARW.JK': 'ICTSI Jasa Prima Tbk',
+    'KAYU.JK': 'Darmi Bersaudara Tbk',
+    'KBAG.JK': 'Karya Bersama Anugerah Tbk',
+    'KBLI.JK': 'KMI Wire and Cable Tbk',
+    'KBLM.JK': 'Kabelindo Murni Tbk',
+    'KBLV.JK': 'First Media Tbk',
+    'KBRI.JK': 'Kertas Basuki Rachmat Indonesia Tbk',
+    'KDSI.JK': 'Kedawung Setia Industrial Tbk',
+    'KEEN.JK': 'Kencana Energi Lestari Tbk',
+    'KEJU.JK': 'Mulia Boga Raya Tbk',
+    'KIAS.JK': 'Keramika Indonesia Assosiasi Tbk',
+    'KICI.JK': 'Kedaung Indah Can Tbk',
+    'KIJA.JK': 'Kawasan Industri Jababeka Tbk',
+    'KINO.JK': 'Kino Indonesia Tbk',
+    'KIOS.JK': 'Kioson Komersial Indonesia Tbk',
+    'KJEN.JK': 'Krakatau Jasa Industri Tbk',
+    'KKGI.JK': 'Resource Alam Indonesia Tbk',
+    'KMDS.JK': 'Kurniamitra Duta Sentosa Tbk',
+    'KMTR.JK': 'Kirana Megatara Tbk',
+    'KOBX.JK': 'Kobexindo Tractors Tbk',
+    'KOIN.JK': 'Kokoh Inti Arebama Tbk',
+    'KONI.JK': 'Perdana Bangun Pusaka Tbk',
+    'KOPI.JK': 'Excelitas Technologies Tbk',
+    'KPAL.JK': 'Steadfast Marine Tbk',
+    'KPAS.JK': 'Cottonindo Ariesta Tbk',
+    'KPIG.JK': 'MNC Land Tbk',
+    'KRAH.JK': 'Grand Kartech Tbk',
+    'KRAS.JK': 'Krakatau Steel (Persero) Tbk',
+    'KREN.JK': 'Kresna Graha Investama Tbk',
+    'KUAS.JK': 'Ace Oldfields Tbk',
+    # === L ===
+    'LABA.JK': 'Ladangbaja Nusantara Tbk',
+    'LABI.JK': 'Multi Labora Utama Tbk',
+    'LAND.JK': 'Trimitra Propertindo Tbk',
+    'LAPD.JK': 'Leyand International Tbk',
+    'LCGP.JK': 'Eureka Prima Jakarta Tbk',
+    'LEAD.JK': 'Logisticsplus International Tbk',
+    'LINK.JK': 'Link Net Tbk',
+    'LION.JK': 'Lion Metal Works Tbk',
+    'LMAS.JK': 'Limas Indonesia Makmur Tbk',
+    'LMPI.JK': 'Langgeng Makmur Industri Tbk',
+    'LMSH.JK': 'Lionmesh Prima Tbk',
+    'LPCK.JK': 'Lippo Cikarang Tbk',
+    'LPGI.JK': 'Lippo General Insurance Tbk',
+    'LPIN.JK': 'Multi Prima Sejahtera Tbk',
+    'LPKR.JK': 'Lippo Karawaci Tbk',
+    'LPLI.JK': 'Star Pacific Tbk',
+    'LPPF.JK': 'Matahari Department Store Tbk',
+    'LPPS.JK': 'Lenox Pasifik Investama Tbk',
+    'LRNA.JK': 'Eka Sari Lorena Transport Tbk',
+    'LSIP.JK': 'London Sumatra Indonesia Tbk',
+    'LTLS.JK': 'Lautan Luas Tbk',
+    'LUCK.JK': 'Sentral Mitra Informatika Tbk',
+    # === M ===
+    'MABA.JK': 'Marga Abhinaya Abadi Tbk',
+    'MAGP.JK': 'Multi Agro Gemilang Plantation Tbk',
+    'MAIN.JK': 'Malindo Feedmill Tbk',
+    'MAMI.JK': 'Mas Murni Indonesia Tbk',
+    'MAPA.JK': 'Map Aktif Adiperkasa Tbk',
+    'MAPB.JK': 'MAP Boga Adiperkasa Tbk',
+    'MAPI.JK': 'Mitra Adiperkasa Tbk',
+    'MARI.JK': 'Maharani Energi Tbk',
+    'MARK.JK': 'Mark Dynamics Indonesia Tbk',
+    'MASA.JK': 'Multistrada Arah Sarana Tbk',
+    'MAYA.JK': 'Bank Mayapada Internasional Tbk',
+    'MBAP.JK': 'Mitrabara Adiperdana Tbk',
+    'MBSS.JK': 'Mitrabahtera Segara Sejati Tbk',
+    'MBTO.JK': 'Martina Berto Tbk',
+    'MCAS.JK': 'M Cash Integrasi Tbk',
+    'MCOL.JK': 'Prima Andalan Mandiri Tbk',
+    'MDIA.JK': 'Intermedia Capital Tbk',
+    'MDKI.JK': 'Emdeki Utama Tbk',
+    'MDLN.JK': 'Modernland Realty Tbk',
+    'MDRN.JK': 'Modern Internasional Tbk',
+    'MEGA.JK': 'Bank Mega Tbk',
+    'MERK.JK': 'Merck Tbk',
+    'META.JK': 'Nusantara Infrastructure Tbk',
+    'MFIN.JK': 'Mandala Multifinance Tbk',
+    'MFMI.JK': 'Multifiling Mitra Indonesia Tbk',
+    'MGNA.JK': 'Magna Investama Tbk',
+    'MICE.JK': 'Multi Indocitra Tbk',
+    'MIDI.JK': 'Midi Utama Indonesia Tbk',
+    'MIKA.JK': 'Mitra Keluarga Karyasehat Tbk',
+    'MINA.JK': 'Sanurhasta Mitra Tbk',
+    'MIRA.JK': 'Mitra International Resources Tbk',
+    'MITI.JK': 'Mitra Investindo Tbk',
+    'MKPI.JK': 'Metropolitan Kentjana Tbk',
+    'MLBI.JK': 'Multi Bintang Indonesia Tbk',
+    'MLIA.JK': 'Mulia Industrindo Tbk',
+    'MLPL.JK': 'Mega Perintis Tbk',
+    'MMLP.JK': 'Mega Manunggal Property Tbk',
+    'MPMX.JK': 'MPM Xcessories Indonesia Tbk',
+    'MPPA.JK': 'Matahari Putra Prima Tbk',
+    'MRAT.JK': 'Mustika Ratu Tbk',
+    'MREI.JK': 'Maskapai Reasuransi Indonesia Tbk',
+    'MSKY.JK': 'MNC Sky Vision Tbk',
+    'MTDL.JK': 'Metrodata Electronics Tbk',
+    'MTFN.JK': 'Capitalinc Investment Tbk',
+    'MTLA.JK': 'Metropolitan Land Tbk',
+    'MTMH.JK': 'Murni Sadar Tbk',
+    'MTRA.JK': 'Mitra Adiperkasa Tbk',
+    'MTSM.JK': 'Metro Realty Tbk',
+    'MYOH.JK': 'Samindo Resources Tbk',
+    'MYTX.JK': 'Asia Pacific Fibers Tbk',
+    # === N ===
+    'NASA.JK': 'Andalan Perkasa Abadi Tbk',
+    'NASI.JK': 'Pengembangan Usaha Nasional Tbk',
+    'NAYZ.JK': 'Nusantara Cahaya Sakti Tbk',
+    'NELY.JK': 'Pelayaran Nelly Dwi Putri Tbk',
+    'NFCX.JK': 'NFC Indonesia Tbk',
+    'NICE.JK': 'Adi Sarana Armada Tbk',
+    'NICK.JK': 'PAM Mineral Tbk',
+    'NIPS.JK': 'Nipress Tbk',
+    'NIRO.JK': 'City Retail Developments Tbk',
+    'NISP.JK': 'Bank OCBC NISP Tbk',
+    'NOBU.JK': 'Bank Nationalnobu Tbk',
+    'NPGF.JK': 'Nusa Palapa Gemilang Tbk',
+    'NRCA.JK': 'Nusa Raya Cipta Tbk',
+    'NTBK.JK': 'Nusantara Inti Corpora Tbk',
+    'NUSA.JK': 'Sinergi Inti Plastindo Tbk',
+    'NZIA.JK': 'Nusantara Almazia Tbk',
+    # === O ===
+    'OBMD.JK': 'Obeecare Tbk',
+    'OCAP.JK': 'MNC Kapital Indonesia Tbk',
+    'OILS.JK': 'Indo Oil Perkasa Tbk',
+    'OMED.JK': 'Jayamas Medica Industri Tbk',
+    'OMRE.JK': 'Indonesia Prima Property Tbk',
+    # === P ===
+    'PADI.JK': 'Minna Padi Investama Sekuritas Tbk',
+    'PALM.JK': 'Provident Agro Tbk',
+    'PAMG.JK': 'Bima Sakti Pertiwi Tbk',
+    'PANI.JK': 'Pratama Abadi Nusa Industri Tbk',
+    'PANR.JK': 'Panorama Sentrawisata Tbk',
+    'PANS.JK': 'Panin Sekuritas Tbk',
+    'PBID.JK': 'Panca Budi Idaman Tbk',
+    'PBSA.JK': 'Paramita Bangun Sarana Tbk',
+    'PCAR.JK': 'Prima Cakrawala Abadi Tbk',
+    'PDES.JK': 'Destinasi Tirta Nusantara Tbk',
+    'PEGE.JK': 'Panca Global Securities Tbk',
+    'PEHA.JK': 'Phapros Tbk',
+    'PGEO.JK': 'Pertamina Geothermal Energy Tbk',
+    'PGJO.JK': 'Tourindo Guide Indonesia Tbk',
+    'PGLI.JK': 'Pembangunan Graha Lestari Tbk',
+    'PICO.JK': 'Pelangi Indah Canindo Tbk',
+    'PJAA.JK': 'Pembangunan Jaya Ancol Tbk',
+    'PKPK.JK': 'Perdana Karya Perkasa Tbk',
+    'PLAS.JK': 'Polaris Investama Tbk',
+    'PLIN.JK': 'Poliplas Indah Sejahtera Tbk',
+    'PMJS.JK': 'Putra Mandiri Jembar Tbk',
+    'PMMP.JK': 'Palmco Holdings Tbk',
+    'PNBN.JK': 'Bank Pan Indonesia Tbk',
+    'PNBS.JK': 'Bank BJB Syariah Tbk',
+    'PNIN.JK': 'Panin Financial Tbk',
+    'PNLF.JK': 'Panin Life Tbk',
+    'PNSE.JK': 'Pudjiadi & Sons Estate Tbk',
+    'POLA.JK': 'Pool Advista Finance Tbk',
+    'POLI.JK': 'Pollux Hotels Group Tbk',
+    'POLL.JK': 'Pollux Properties Indonesia Tbk',
+    'POLU.JK': 'Golden Great Borneo Tbk',
+    'POOL.JK': 'Pool Advista Finance Tbk',
+    'PORT.JK': 'Nusantara Pelabuhan Handal Tbk',
+    'POSA.JK': 'Bliss Properti Indonesia Tbk',
+    'POWR.JK': 'Cikarang Listrindo Tbk',
+    'PPRO.JK': 'PP Properti Tbk',
+    'PRAS.JK': 'Prima Alloy Steel Universal Tbk',
+    'PRDA.JK': 'Prima Dahana Tbk',
+    'PRIM.JK': 'Royal Prima Tbk',
+    'PSAB.JK': 'J Resources Asia Pasifik Tbk',
+    'PSGO.JK': 'Palma Serasih Tbk',
+    'PSKT.JK': 'Red Planet Indonesia Tbk',
+    'PSSI.JK': 'Pelita Samudera Shipping Tbk',
+    'PTIS.JK': 'Indo Straits Tbk',
+    'PTPP.JK': 'PP (Persero) Tbk',
+    'PTPW.JK': 'Pratama Widya Tbk',
+    'PUDP.JK': 'Pudjiadi Prestige Tbk',
+    'PURA.JK': 'Putra Rajawali Kencana Tbk',
+    'PURE.JK': 'Trinitan Metals and Minerals Tbk',
+    'PURI.JK': 'Puri Global Sukses Tbk',
+    'PWON.JK': 'Pakuwon Jati Tbk',
+    'PYFA.JK': 'Pyridam Farma Tbk',
+    'PZZA.JK': 'Sarimelati Kencana Tbk',
+    # === R ===
+    'RAJA.JK': 'Rukun Raharja Tbk',
+    'RALS.JK': 'Ramayana Lestari Sentosa Tbk',
+    'RANC.JK': 'Supra Boga Lestari Tbk',
+    'RBMS.JK': 'Ristia Bintang Mahkotasejati Tbk',
+    'RDTX.JK': 'Roda Vivatex Tbk',
+    'REAL.JK': 'Republik Agung Pakarti Tbk',
+    'RELI.JK': 'Reliance Sekuritas Indonesia Tbk',
+    'RICY.JK': 'Ricky Putra Globalindo Tbk',
+    'RIGS.JK': 'Rig Tenders Indonesia Tbk',
+    'RIMO.JK': 'Rimo International Lestari Tbk',
+    'RISE.JK': 'Jaya Sukses Makmur Sentosa Tbk',
+    'ROCK.JK': 'Rockfields Properti Indonesia Tbk',
+    'RODA.JK': 'Pikko Land Development Tbk',
+    'ROTI.JK': 'Nippon Indosari Corpindo Tbk',
+    'RUIS.JK': 'Radiant Utama Interinsco Tbk',
+    # === S ===
+    'SAFE.JK': 'Steady Safe Tbk',
+    'SAME.JK': 'Sarana Meditama Metropolitan Tbk',
+    'SAMF.JK': 'Saraswanti Anugerah Makmur Tbk',
+    'SAPX.JK': 'Satria Antaran Prima Tbk',
+    'SATU.JK': 'Kota Satu Properti Tbk',
+    'SBAT.JK': 'Sejahtera Bintang Abadi Textile Tbk',
+    'SCCO.JK': 'Supreme Cable Manufacturing & Commerce Tbk',
+    'SCMA.JK': 'Surya Citra Media Tbk',
+    'SCNP.JK': 'Selamat Sempurna Tbk',
+    'SDMU.JK': 'Sidomulyo Selaras Tbk',
+    'SDPC.JK': 'Millennium Pharmacon International Tbk',
+    'SDRA.JK': 'Bank Woori Saudara Indonesia 1906 Tbk',
+    'SFAN.JK': 'Surya Fajar Capital Tbk',
+    'SGER.JK': 'Sumber Global Energy Tbk',
+    'SGRO.JK': 'Sinar Mas Agribusiness and Food Tbk',
+    'SHID.JK': 'Hotel Sahid Jaya International Tbk',
+    'SHIP.JK': 'Sillo Maritime Perdana Tbk',
+    'SIDO.JK': 'Industri Jamu dan Farmasi Sido Muncul Tbk',
+    'SILO.JK': 'Siloam International Hospitals Tbk',
+    'SIMA.JK': 'Siwani Makmur Tbk',
+    'SIMP.JK': 'Salim Ivomas Pratama Tbk',
+    'SINI.JK': 'Singaraja Putra Tbk',
+    'SIPD.JK': 'Sreeya Sewu Indonesia Tbk',
+    'SKBM.JK': 'Sekar Bumi Tbk',
+    'SKLT.JK': 'Sekar Laut Tbk',
+    'SKRN.JK': 'Superkrane Mitra Utama Tbk',
+    'SKYB.JK': 'Northcliff Citranusa Indonesia Tbk',
+    'SLIS.JK': 'Gaya Abadi Sempurna Tbk',
+    'SMAR.JK': 'Smart Tbk',
+    'SMBR.JK': 'Semen Baturaja (Persero) Tbk',
+    'SMCB.JK': 'Solusi Bangun Indonesia Tbk',
+    'SMDM.JK': 'Suryamas Dutamakmur Tbk',
+    'SMDR.JK': 'Samudera Indonesia Tbk',
+    'SMMA.JK': 'Sinarmas Mining Tbk',
+    'SMMT.JK': 'Pratama Abadi Nusa Industri Tbk',
+    'SMRA.JK': 'Summarecon Agung Tbk',
+    'SMSM.JK': 'Selamat Sempurna Tbk',
+    'SOCI.JK': 'Soechi Lines Tbk',
+    'SOFA.JK': 'Boston Furniture Industries Tbk',
+    'SONA.JK': 'Sona Topas Tourism Industry Tbk',
+    'SORG.JK': 'Sorini Agro Asia Corporindo Tbk',
+    'SOTS.JK': 'Satria Mega Kencana Tbk',
+    'SPMA.JK': 'Suparma Tbk',
+    'SPTO.JK': 'Surya Pertiwi Tbk',
+    'SQMI.JK': 'Wilton Makmur Indonesia Tbk',
+    'SRAJ.JK': 'Sejahtera Raya Tbk',
+    'SRIL.JK': 'Sri Rejeki Isman Tbk',
+    'SRSN.JK': 'Indo Acidatama Tbk',
+    'SRTG.JK': 'Saratoga Investama Sedaya Tbk',
+    'SSIA.JK': 'Surya Semesta Internusa Tbk',
+    'SSMS.JK': 'Sawit Sumbermas Sarana Tbk',
+    'SSTM.JK': 'Sunson Textile Manufacturer Tbk',
+    'STAR.JK': 'Buana Lintas Lautan Tbk',
+    'STTP.JK': 'Siantar Top Tbk',
+    'SUGI.JK': 'Sugih Energy Tbk',
+    'SULI.JK': 'SLJ Global Tbk',
+    'SUPR.JK': 'Solusi Tunas Pratama Tbk',
+    'SURE.JK': 'Super Energy Tbk',
+    'SWAT.JK': 'Sriwahana Adityakarta Tbk',
+    # === T ===
+    'TADI.JK': 'Adi Tour Tbk',
+    'TALF.JK': 'Tunas Alfin Tbk',
+    'TAMU.JK': 'Pelayaran Tamarin Samudra Tbk',
+    'TAPG.JK': 'Triputra Agro Persada Tbk',
+    'TARA.JK': 'Agung Semesta Sejahtera Tbk',
+    'TAXI.JK': 'Express Transindo Utama Tbk',
+    'TBLA.JK': 'Tunas Baru Lampung Tbk',
+    'TCID.JK': 'Mandom Indonesia Tbk',
+    'TCPI.JK': 'Transcoal Pacific Tbk',
+    'TDPM.JK': 'Tridomain Performance Materials Tbk',
+    'TEBE.JK': 'Dana Brata Luhur Tbk',
+    'TECH.JK': 'Indosterling Technomedia Tbk',
+    'TELE.JK': 'Tiphone Mobile Indonesia Tbk',
+    'TFAS.JK': 'Telefast Indonesia Tbk',
+    'TFCO.JK': 'Tifico Fiber Indonesia Tbk',
+    'TGKA.JK': 'Tigaraksa Satria Tbk',
+    'TGRA.JK': 'Terregra Asia Energy Tbk',
+    'TIFA.JK': 'KDB Tifa Finance Tbk',
+    'TINS.JK': 'Timah Tbk',
+    'TIRA.JK': 'Tira Austenite Tbk',
+    'TIRT.JK': 'Tirta Mahakam Resources Tbk',
+    'TKIM.JK': 'Pabrik Kertas Tjiwi Kimia Tbk',
+    'TMAS.JK': 'Temas Tbk',
+    'TMPO.JK': 'Tempo Inti Media Tbk',
+    'TOBA.JK': 'Toba Bara Sejahtera Tbk',
+    'TOPS.JK': 'Totalindo Eka Persada Tbk',
+    'TOTL.JK': 'Total Bangun Persada Tbk',
+    'TOTO.JK': 'Surya Toto Indonesia Tbk',
+    'TPMA.JK': 'Trans Power Marine Tbk',
+    'TRAM.JK': 'Trada Alam Minera Tbk',
+    'TRIL.JK': 'Triwira Insanlestari Tbk',
+    'TRIM.JK': 'Trimegah Sekuritas Indonesia Tbk',
+    'TRIN.JK': 'Perintis Triniti Properti Tbk',
+    'TRIO.JK': 'Trikomsel Oke Tbk',
+    'TRIS.JK': 'Trisula International Tbk',
+    'TRJA.JK': 'Transkon Jaya Tbk',
+    'TRST.JK': 'Trias Sentosa Tbk',
+    'TRUE.JK': 'Triniti Dinamik Tbk',
+    'TRUK.JK': 'Guna Timur Raya Tbk',
+    'TRUS.JK': 'Trust Finance Indonesia Tbk',
+    'TSPC.JK': 'Tempo Scan Pacific Tbk',
+    'TUGU.JK': 'Asuransi Tugu Pratama Indonesia Tbk',
+    'TURI.JK': 'Tunas Ridean Tbk',
+    # === U ===
+    'UANG.JK': 'Pakuan Tbk',
+    'UCID.JK': 'Uni-Charm Indonesia Tbk',
+    'UFOE.JK': 'UFO Elektronika Tbk',
+    'ULTJ.JK': 'Ultra Jaya Milk Industry & Trading Company Tbk',
+    'UNIC.JK': 'Unggul Indah Cahaya Tbk',
+    'UNIQ.JK': 'Ulima Nitra Tbk',
+    'UNSP.JK': 'Bakrie Sumatera Plantations Tbk',
+    'URBN.JK': 'Urban Jakarta Propertindo Tbk',
+    'UVCR.JK': 'UVI Cemerlang Tbk',
+    # === V ===
+    'VICI.JK': 'Victoria Investama Tbk',
+    'VICO.JK': 'Victoria Insurance Tbk',
+    'VIDS.JK': 'Vidio Dot Com Tbk',
+    'VIVA.JK': 'Visi Media Asia Tbk',
+    'VOKS.JK': 'Voksel Electric Tbk',
+    'VRNA.JK': 'Mizuho Leasing Indonesia Tbk',
+    # === W ===
+    'WAPO.JK': 'Wahana Pronatural Tbk',
+    'WEGE.JK': 'Wijaya Karya Bangunan Gedung Tbk',
+    'WEHA.JK': 'Wahana Ekspres Indonesia Tbk',
+    'WICO.JK': 'Wicaksana Overseas International Tbk',
+    'WIIM.JK': 'Wismilak Inti Makmur Tbk',
+    'WIKA.JK': 'Wijaya Karya (Persero) Tbk',
+    'WINS.JK': 'Wintermar Offshore Marine Tbk',
+    'WIRG.JK': 'WIR Asia Tbk',
+    'WISM.JK': 'Wisma Kodel Tbk',
+    'WIYA.JK': 'Widya Yutama Tbk',
+    'WMPP.JK': 'Widodo Makmur Perkasa Tbk',
+    'WMUU.JK': 'Widodo Makmur Unggas Tbk',
+    'WOMF.JK': 'Wahana Ottomitra Multiartha Tbk',
+    'WOOD.JK': 'Integra Indocabinet Tbk',
+    'WOWS.JK': 'Ginting Jaya Energi Tbk',
+    'WTON.JK': 'Wijaya Karya Beton Tbk',
+    # === Y ===
+    'YPAS.JK': 'Yanaprima Hastapersada Tbk',
+    'YULE.JK': 'Yulie Sekuritas Indonesia Tbk',
+    # === Z ===
+    'ZBRA.JK': 'Dosni Roha Indonesia Tbk',
+    'ZINC.JK': 'Kapuas Prima Coal Tbk',
+    'ZONE.JK': 'Mega Perintis Tbk',
+    'ZYRX.JK': 'Zyrexindo Mandiri Tbk',
 }
 
 # Daftar Broker
@@ -305,7 +889,7 @@ BROKER_LIST = {
 }
 
 # ============================================================================
-# FUNGSI TEKNIKAL ANALISIS (Dari Kode Pertama)
+# FUNGSI TEKNIKAL ANALISIS
 # ============================================================================
 
 @st.cache_data(ttl=300)
@@ -405,7 +989,6 @@ def analyze_strategy(df, strategy_type):
     }
     
     if strategy_type == 'Scalping':
-        # EMA Crossover cepat + RSI + Bollinger + Volume
         ema_buy = latest['EMA_12'] > latest['EMA_26'] and prev['EMA_12'] <= prev['EMA_26']
         ema_sell = latest['EMA_12'] < latest['EMA_26'] and prev['EMA_12'] >= prev['EMA_26']
         rsi_valid = 30 < latest['RSI'] < 70
@@ -429,7 +1012,6 @@ def analyze_strategy(df, strategy_type):
             signals['take_profit'] = latest['Close'] - (latest['ATR'] * 2)
             
     elif strategy_type == 'Intraday':
-        # MACD + RSI + ADX + Support/Resistance
         macd_buy = latest['MACD'] > latest['MACD_Signal'] and prev['MACD'] <= prev['MACD_Signal']
         macd_sell = latest['MACD'] < latest['MACD_Signal'] and prev['MACD'] >= prev['MACD_Signal']
         rsi_oversold = latest['RSI'] < 30
@@ -454,7 +1036,6 @@ def analyze_strategy(df, strategy_type):
             signals['take_profit'] = latest['Support']
             
     else:  # Investasi
-        # Golden Cross + Trend + Fibonacci
         golden_cross = latest['SMA_50'] > latest['SMA_200'] and prev['SMA_50'] <= prev['SMA_200']
         death_cross = latest['SMA_50'] < latest['SMA_200'] and prev['SMA_50'] >= prev['SMA_200']
         bullish_trend = latest['SMA_50'] > latest['SMA_200']
@@ -485,7 +1066,7 @@ def analyze_strategy(df, strategy_type):
     return signals
 
 # ============================================================================
-# FUNGSI BANDARMOLOGI (Dari Kode Kedua)
+# FUNGSI BANDARMOLOGI
 # ============================================================================
 
 def analyze_bandarmology(df, symbol, manual_data=None):
@@ -522,13 +1103,11 @@ def analyze_bandarmology(df, symbol, manual_data=None):
     money_flow = ((df['Close'] - df['Low']) - (df['High'] - df['Close'])) / (df['High'] - df['Low']) * df['Volume']
     df['AD_Line'] = money_flow.cumsum()
     
-    # Analisis
     obv_trend = 'UP' if df['OBV'].iloc[-1] > df['OBV_SMA'].iloc[-1] else 'DOWN'
     price_trend = 'UP' if df['Close'].iloc[-1] > df['Close'].iloc[-20] else 'DOWN'
     ad_trend = 'UP' if df['AD_Line'].iloc[-1] > df['AD_Line'].iloc[-20] else 'DOWN'
     vol_ratio = df['Volume'].tail(5).mean() / df['Volume'].mean()
     
-    # Scoring
     score = 0
     if obv_trend == 'UP': score += 30
     if ad_trend == 'UP': score += 30
@@ -574,7 +1153,7 @@ def analyze_bandarmology(df, symbol, manual_data=None):
     return analysis
 
 # ============================================================================
-# FUNGSI BROKER SUMMARY (Dari Kode Kedua)
+# FUNGSI BROKER SUMMARY
 # ============================================================================
 
 def generate_broker_summary(symbol, df):
@@ -668,7 +1247,7 @@ def generate_broker_summary(symbol, df):
     return summary
 
 # ============================================================================
-# FUNGSI TRANSACTION ANALYSIS (Dari Kode Kedua)
+# FUNGSI TRANSACTION ANALYSIS
 # ============================================================================
 
 def analyze_transactions(symbol, df):
@@ -687,7 +1266,6 @@ def analyze_transactions(symbol, df):
     current_price = df['Close'].iloc[-1]
     avg_price_20 = df['Close'].tail(20).mean()
     
-    # Big Lots Detection
     big_lot_threshold = 500_000_000
     num_big_trans = int(df['Volume'].iloc[-1] / 1000000)
     
@@ -709,7 +1287,6 @@ def analyze_transactions(symbol, df):
     
     analysis['big_lots'] = sorted(big_transactions, key=lambda x: x['Value'], reverse=True)
     
-    # Patterns
     total_buy_lot = sum([t['Lot'] for t in big_transactions if t['Type'] == 'BUY'])
     total_sell_lot = sum([t['Lot'] for t in big_transactions if t['Type'] == 'SELL'])
     
@@ -720,13 +1297,11 @@ def analyze_transactions(symbol, df):
         'buy_sell_ratio': total_buy_lot / total_sell_lot if total_sell_lot > 0 else float('inf')
     }
     
-    # Time Distribution
     hours = ['09:00-10:00', '10:00-11:00', '11:00-12:00', '13:30-14:00', '14:00-15:00', '15:00-15:30']
     analysis['time_distribution'] = {hour: np.random.randint(100, 1000) for hour in hours}
     analysis['time_distribution']['09:00-10:00'] *= 1.5
     analysis['time_distribution']['14:00-15:00'] *= 1.3
     
-    # Price Levels
     analysis['price_levels'] = {
         'support_1': df['Low'].tail(5).min(),
         'support_2': df['Low'].tail(20).min(),
@@ -736,7 +1311,6 @@ def analyze_transactions(symbol, df):
         'pivot': (df['High'].iloc[-1] + df['Low'].iloc[-1] + df['Close'].iloc[-1]) / 3
     }
     
-    # Unusual Activity
     if current_price > avg_price_20 * 1.05 and df['Volume'].iloc[-1] > df['Volume'].mean() * 1.5:
         analysis['unusual_activity'].append({
             'type': 'BREAKOUT_VOLUME',
@@ -774,36 +1348,29 @@ def create_main_chart(df, symbol, strategy):
         subplot_titles=('Price Action', 'MACD', 'RSI', 'Volume')
     )
     
-    # Candlestick
     fig.add_trace(go.Candlestick(
         x=df.index, open=df['Open'], high=df['High'],
         low=df['Low'], close=df['Close'], name='OHLC'
     ), row=1, col=1)
     
-    # Moving Averages
     fig.add_trace(go.Scatter(x=df.index, y=df['SMA_20'], name='SMA 20', line=dict(color='blue', width=1)), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['SMA_50'], name='SMA 50', line=dict(color='orange', width=1)), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['SMA_200'], name='SMA 200', line=dict(color='red', width=1)), row=1, col=1)
     
-    # Bollinger Bands
     fig.add_trace(go.Scatter(x=df.index, y=df['BB_Upper'], name='BB Upper', line=dict(color='gray', width=1, dash='dash')), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['BB_Lower'], name='BB Lower', line=dict(color='gray', width=1, dash='dash')), row=1, col=1)
     
-    # Support/Resistance
     fig.add_trace(go.Scatter(x=df.index, y=df['Support'], name='Support', line=dict(color='green', width=1, dash='dot')), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['Resistance'], name='Resistance', line=dict(color='red', width=1, dash='dot')), row=1, col=1)
     
-    # MACD
     fig.add_trace(go.Scatter(x=df.index, y=df['MACD'], name='MACD', line=dict(color='blue')), row=2, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['MACD_Signal'], name='Signal', line=dict(color='red')), row=2, col=1)
     fig.add_trace(go.Bar(x=df.index, y=df['MACD_Hist'], name='Histogram', marker_color='gray'), row=2, col=1)
     
-    # RSI
     fig.add_trace(go.Scatter(x=df.index, y=df['RSI'], name='RSI', line=dict(color='purple')), row=3, col=1)
     fig.add_hline(y=70, line_dash="dash", line_color="red", row=3, col=1)
     fig.add_hline(y=30, line_dash="dash", line_color="green", row=3, col=1)
     
-    # Volume
     colors = ['red' if df['Close'].iloc[i] < df['Open'].iloc[i] else 'green' for i in range(len(df))]
     fig.add_trace(go.Bar(x=df.index, y=df['Volume'], name='Volume', marker_color=colors), row=4, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df['Volume_SMA'], name='Vol SMA 20', line=dict(color='orange')), row=4, col=1)
@@ -887,11 +1454,22 @@ def main():
         help='Scalping: 1-15 menit | Intraday: 30 menit - 4 jam | Investasi: Daily/Swing'
     )
     
-    # Pilih saham
+    # Search / filter saham
+    search_query = st.sidebar.text_input('🔍 Cari Saham (kode/nama):', placeholder='contoh: BBCA atau Bank Central')
+    
+    if search_query:
+        filtered = {
+            k: v for k, v in SAHAM_INDONESIA.items()
+            if search_query.upper() in k or search_query.lower() in v.lower()
+        }
+        stock_options = filtered if filtered else SAHAM_INDONESIA
+    else:
+        stock_options = SAHAM_INDONESIA
+    
     selected_stock = st.sidebar.selectbox(
-        'Pilih Saham:',
-        options=list(SAHAM_INDONESIA.keys()),
-        format_func=lambda x: f"{x} - {SAHAM_INDONESIA[x]}"
+        f'Pilih Saham ({len(stock_options)} tersedia):',
+        options=list(stock_options.keys()),
+        format_func=lambda x: f"{x} - {stock_options[x]}"
     )
     
     # Timeframe berdasarkan strategi
@@ -933,6 +1511,10 @@ def main():
             save_manual_data(manual_data)
             st.success('Data tersimpan!')
     
+    # Info jumlah saham
+    st.sidebar.markdown('---')
+    st.sidebar.info(f'📊 Total: **{len(SAHAM_INDONESIA)}** saham tersedia')
+    
     # Tombol analisis
     analyze_button = st.sidebar.button('🔍 Analisis Lengkap', use_container_width=True)
     
@@ -946,16 +1528,14 @@ def main():
             st.session_state.interval = interval
         
         symbol = st.session_state.get('symbol', selected_stock)
-        current_strategy = st.session_state.get('last_strategy', strategy)
+        current_strategy = st.session_state.get('strategy', strategy)
         
-        with st.spinner(f'Menganalisis {symbol}...'):
+        with st.spinner(f'Menganalisis {symbol} - {SAHAM_INDONESIA.get(symbol, "")}...'):
             df = get_stock_data(symbol, period, interval)
             
             if df is not None and len(df) > 20:
-                # Calculate indicators
                 df = calculate_indicators(df)
                 
-                # Create tabs untuk SEMUA FITUR
                 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
                     '📊 Technical Analysis',
                     '🎯 Strategy Signals',
@@ -966,12 +1546,11 @@ def main():
                 ])
                 
                 # ================================================================
-                # TAB 1: TECHNICAL ANALYSIS (Lengkap dari kode pertama)
+                # TAB 1: TECHNICAL ANALYSIS
                 # ================================================================
                 with tab1:
                     st.markdown('<div class="tab-subheader">📊 Analisis Teknikal Lengkap</div>', unsafe_allow_html=True)
                     
-                    # Metrics
                     col1, col2, col3, col4 = st.columns(4)
                     with col1:
                         current_price = df['Close'].iloc[-1]
@@ -984,11 +1563,9 @@ def main():
                     with col4:
                         st.metric('RSI (14)', f'{df["RSI"].iloc[-1]:.1f}')
                     
-                    # Main Chart
                     fig = create_main_chart(df, symbol, current_strategy)
                     st.plotly_chart(fig, use_container_width=True)
                     
-                    # Technical Summary
                     st.subheader('📋 Ringkasan Indikator')
                     tech_col1, tech_col2, tech_col3, tech_col4 = st.columns(4)
                     
@@ -1017,7 +1594,7 @@ def main():
                         st.markdown(f'Fib 61.8%: Rp {df["Fib_618"].iloc[-1]:,.0f}')
                 
                 # ================================================================
-                # TAB 2: STRATEGY SIGNALS (Dari kode pertama)
+                # TAB 2: STRATEGY SIGNALS
                 # ================================================================
                 with tab2:
                     st.markdown('<div class="tab-subheader">🎯 Sinyal Strategi Trading</div>', unsafe_allow_html=True)
@@ -1025,7 +1602,6 @@ def main():
                     signals = analyze_strategy(df, current_strategy)
                     
                     if signals:
-                        # Signal Display
                         signal_col1, signal_col2, signal_col3, signal_col4 = st.columns(4)
                         
                         with signal_col1:
@@ -1049,7 +1625,6 @@ def main():
                             trend = 'Uptrend' if df['SMA_50'].iloc[-1] > df['SMA_200'].iloc[-1] else 'Downtrend'
                             st.metric('Trend Jangka Panjang', trend)
                         
-                        # Trading Plan
                         st.markdown('---')
                         st.subheader('🎯 Trading Plan')
                         
@@ -1061,12 +1636,10 @@ def main():
                         with plan_col3:
                             st.markdown(f'<div class="success-box"><b>Take Profit:</b> Rp {signals["take_profit"]:,.0f}</div>' if signals["take_profit"] else '<div class="success-box"><b>Take Profit:</b> -</div>', unsafe_allow_html=True)
                         
-                        # Alasan
                         st.subheader('📝 Alasan Sinyal')
                         for alasan in signals['alasan']:
                             st.markdown(f'- {alasan}')
                         
-                        # Strategy Info
                         with st.expander('ℹ️ Tentang Strategi Ini'):
                             if current_strategy == 'Scalping':
                                 st.markdown("""
@@ -1097,7 +1670,7 @@ def main():
                                 """)
                 
                 # ================================================================
-                # TAB 3: BANDARMOLOGI (Dari kode kedua)
+                # TAB 3: BANDARMOLOGI
                 # ================================================================
                 with tab3:
                     st.markdown('<div class="tab-subheader">🕵️ Analisis Bandarmologi (Smart Money)</div>', unsafe_allow_html=True)
@@ -1106,10 +1679,8 @@ def main():
                     bandar = analyze_bandarmology(df, symbol, manual_data)
                     
                     if bandar:
-                        # Warning box untuk data delayed
                         st.markdown('<div class="warning-box">⚠️ <b>Catatan:</b> Analisis ini menggunakan data Closing T+1. Gunakan untuk melihat trend jangka menengah, bukan untuk entry real-time.</div>', unsafe_allow_html=True)
                         
-                        # Summary Cards
                         st.markdown('<div class="bandar-card">', unsafe_allow_html=True)
                         col1, col2, col3 = st.columns(3)
                         
@@ -1127,7 +1698,6 @@ def main():
                         
                         st.markdown('</div>', unsafe_allow_html=True)
                         
-                        # Detail Analysis
                         col1, col2 = st.columns(2)
                         with col1:
                             st.subheader('📊 Volume Analysis')
@@ -1142,11 +1712,9 @@ def main():
                             st.markdown(f"- **Price Trend:** {ind['price_trend']}")
                             st.markdown(f"- **Last Update:** {bandar['last_update']}")
                         
-                        # Chart
                         fig_bandar = create_bandarmology_chart(df)
                         st.plotly_chart(fig_bandar, use_container_width=True)
                         
-                        # Interpretasi
                         with st.expander('📖 Cara Membaca Indikator'):
                             st.markdown("""
                             **On-Balance Volume (OBV):**
@@ -1163,7 +1731,6 @@ def main():
                             - Divergence = Potensi pembalikan
                             """)
                         
-                        # Data manual jika ada
                         if bandar['has_realtime']:
                             st.markdown('---')
                             st.markdown('<div class="info-box">', unsafe_allow_html=True)
@@ -1179,7 +1746,7 @@ def main():
                             st.markdown('</div>', unsafe_allow_html=True)
                 
                 # ================================================================
-                # TAB 4: BROKER SUMMARY (Dari kode kedua)
+                # TAB 4: BROKER SUMMARY
                 # ================================================================
                 with tab4:
                     st.markdown('<div class="tab-subheader">🏦 Analisis Transaksi per Broker</div>', unsafe_allow_html=True)
@@ -1187,13 +1754,12 @@ def main():
                     broker_data = generate_broker_summary(symbol, df)
                     
                     if broker_data:
-                        # Metrics
                         metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
                         
                         with metric_col1:
                             foreign_net = broker_data['foreign_net']
                             color = '🟢' if foreign_net > 0 else '🔴'
-                            st.metric('Foreign Net', f"{color} Rp {abs(foreign_net)/1e9:.1f}B", 
+                            st.metric('Foreign Net', f"{color} Rp {abs(foreign_net)/1e9:.1f}B",
                                      delta=f"{'Net Buy' if foreign_net > 0 else 'Net Sell'}")
                         
                         with metric_col2:
@@ -1208,10 +1774,9 @@ def main():
                         
                         with metric_col4:
                             dominant = broker_data['dominant_side']
-                            st.metric('Dominant Side', dominant, 
+                            st.metric('Dominant Side', dominant,
                                      delta='Bullish' if dominant == 'BUY' else 'Bearish')
                         
-                        # Top Brokers Table
                         st.subheader('🏆 Top 10 Broker Aktif')
                         df_brokers = broker_data['detail']
                         
@@ -1221,14 +1786,12 @@ def main():
                         display_df['Net_Value'] = display_df['Net_Value'].apply(lambda x: f"Rp {x/1e9:.1f}B" if abs(x) > 1e9 else f"Rp {x/1e6:.1f}M")
                         display_df['Total_Value'] = display_df['Total_Value'].apply(lambda x: f"Rp {x/1e9:.1f}B" if x > 1e9 else f"Rp {x/1e6:.1f}M")
                         
-                        st.dataframe(display_df[['Kode', 'Nama_Broker', 'Type', 'Buy_Value', 'Sell_Value', 'Net_Value', 'Frequency']], 
+                        st.dataframe(display_df[['Kode', 'Nama_Broker', 'Type', 'Buy_Value', 'Sell_Value', 'Net_Value', 'Frequency']],
                                     use_container_width=True, hide_index=True)
                         
-                        # Visualization
                         fig_broker = create_broker_chart(broker_data)
                         st.plotly_chart(fig_broker, use_container_width=True)
                         
-                        # Analysis Text
                         st.subheader('📝 Analisis Broker')
                         top_buyer = broker_data['top_buyer']
                         top_seller = broker_data['top_seller']
@@ -1244,7 +1807,7 @@ def main():
                         """)
                 
                 # ================================================================
-                # TAB 5: TRANSACTION ANALYSIS (Dari kode kedua)
+                # TAB 5: TRANSACTION ANALYSIS
                 # ================================================================
                 with tab5:
                     st.markdown('<div class="tab-subheader">💰 Analisis Transaksi Detail</div>', unsafe_allow_html=True)
@@ -1252,7 +1815,6 @@ def main():
                     trans_analysis = analyze_transactions(symbol, df)
                     
                     if trans_analysis:
-                        # Big Lots
                         st.subheader('🎯 Deteksi Transaksi Besar (Big Lots)')
                         
                         if trans_analysis['big_lots']:
@@ -1281,7 +1843,6 @@ def main():
                             
                             st.dataframe(styled_df, use_container_width=True)
                             
-                            # Summary
                             total_big = sum([t['Value'] for t in trans_analysis['big_lots']])
                             buy_big = sum([t['Value'] for t in trans_analysis['big_lots'] if t['Type'] == 'BUY'])
                             sell_big = sum([t['Value'] for t in trans_analysis['big_lots'] if t['Type'] == 'SELL'])
@@ -1296,7 +1857,6 @@ def main():
                         else:
                             st.info('Tidak ada transaksi big lot terdeteksi')
                         
-                        # Patterns
                         st.markdown('---')
                         st.subheader('📊 Pola Transaksi')
                         
@@ -1322,11 +1882,10 @@ def main():
                             st.markdown('Buy/Sell Ratio')
                             st.markdown('</div>', unsafe_allow_html=True)
                         
-                        # Time Distribution
                         st.markdown('---')
                         st.subheader('⏰ Distribusi Waktu')
                         
-                        time_df = pd.DataFrame(list(trans_analysis['time_distribution'].items()), 
+                        time_df = pd.DataFrame(list(trans_analysis['time_distribution'].items()),
                                               columns=['Time', 'Volume'])
                         
                         fig_time = go.Figure(go.Bar(
@@ -1342,7 +1901,6 @@ def main():
                         )
                         st.plotly_chart(fig_time, use_container_width=True)
                         
-                        # Price Levels
                         st.markdown('---')
                         st.subheader('📍 Level Harga Penting')
                         
@@ -1365,7 +1923,6 @@ def main():
                             st.markdown(f"R1: Rp {levels['resistance_1']:,.0f}")
                             st.markdown(f"R2: Rp {levels['resistance_2']:,.0f}")
                         
-                        # Unusual Activity
                         if trans_analysis['unusual_activity']:
                             st.markdown('---')
                             st.subheader('🚨 Aktivitas Tidak Biasa')
@@ -1375,28 +1932,24 @@ def main():
                                 st.markdown(f"{severity} **{activity['type']}**: {activity['description']}")
                 
                 # ================================================================
-                # TAB 6: HYBRID FORECAST (Gabungan semua)
+                # TAB 6: HYBRID FORECAST
                 # ================================================================
                 with tab6:
                     st.markdown('<div class="tab-subheader">🔮 Hybrid Forecast (Gabungan Semua Analisis)</div>', unsafe_allow_html=True)
                     
-                    # Kumpulkan semua sinyal
                     tech_signals = analyze_strategy(df, current_strategy)
                     bandar_signals = analyze_bandarmology(df, symbol, manual_data)
                     trans_signals = analyze_transactions(symbol, df)
                     
-                    # Scoring
                     score = 0
                     reasons = []
                     
-                    # Technical Score
                     if tech_signals:
                         if tech_signals['rekomendasi'] == 'BUY': score += 25
                         elif tech_signals['rekomendasi'] == 'SELL': score -= 25
                         if tech_signals['confidence'] > 70: score += 10
                         reasons.append(f"📊 Technical ({current_strategy}): {tech_signals['rekomendasi']} ({tech_signals['confidence']}%)")
                     
-                    # Bandarmologi Score
                     if bandar_signals:
                         if 'ACCUMULATION' in bandar_signals['trend']: score += 25
                         elif 'DISTRIBUTION' in bandar_signals['trend']: score -= 25
@@ -1404,24 +1957,20 @@ def main():
                         elif bandar_signals['indicators']['divergence'] == 'Bearish': score -= 15
                         reasons.append(f"🕵️ Bandarmologi: {bandar_signals['trend']}")
                     
-                    # Transaction Score
                     if trans_signals:
                         bp = trans_signals['transaction_patterns']['buy_pressure']
                         if bp > 0.6: score += 20
                         elif bp < 0.4: score -= 20
                         reasons.append(f"💰 Transaction Buy Pressure: {bp*100:.0f}%")
                     
-                    # Manual Data Score
                     if bandar_signals and bandar_signals['has_realtime']:
                         md = bandar_signals['manual_data']
                         if md['foreign']['net'] > 0: score += 15
                         if md['big_lot']['net'] > 0: score += 10
                         reasons.append(f"📥 Your Data: Foreign {md['foreign']['net']:.1f}M")
                     
-                    # Normalize score
-                    score = max(0, min(100, score + 50))  # Convert to 0-100 scale
+                    score = max(0, min(100, score + 50))
                     
-                    # Display
                     col1, col2 = st.columns([1, 2])
                     
                     with col1:
@@ -1472,7 +2021,6 @@ def main():
                         else:
                             st.warning("⚠️ Tambahkan data broker real-time untuk meningkatkan akurasi")
                     
-                    # Matrix
                     st.markdown('---')
                     st.subheader('🎲 Decision Matrix')
                     
@@ -1507,14 +2055,14 @@ def main():
                 )
                 
             else:
-                st.error(f'Data tidak cukup untuk {symbol}')
+                st.error(f'Data tidak cukup untuk {symbol}. Coba ubah periode atau interval.')
     
     else:
         # Welcome Screen
         st.info('👈 Pilih strategi dan saham di sidebar, kemudian klik "Analisis Lengkap"')
         
         st.markdown('---')
-        st.subheader('✨ Fitur Utama Aplikasi Ini')
+        st.subheader(f'✨ {len(SAHAM_INDONESIA)} Saham Tersedia — Fitur Utama Aplikasi')
         
         col1, col2, col3 = st.columns(3)
         
@@ -1549,12 +2097,13 @@ def main():
         st.markdown("""
         ### 🎯 Cara Penggunaan Optimal:
         
-        1. **Pilih Strategi** sesuai timeframe trading Anda
-        2. **Analisis Technical** untuk entry/exit points
-        3. **Cek Bandarmologi** untuk arah trend smart money
-        4. **Lihat Broker Summary** untuk dominasi asing/lokal
-        5. **Input Data Anda** dari platform broker untuk validasi real-time
-        6. **Lihat Hybrid Forecast** untuk keputusan final
+        1. **Cari Saham** menggunakan kotak pencarian di sidebar (kode atau nama)
+        2. **Pilih Strategi** sesuai timeframe trading Anda
+        3. **Analisis Technical** untuk entry/exit points
+        4. **Cek Bandarmologi** untuk arah trend smart money
+        5. **Lihat Broker Summary** untuk dominasi asing/lokal
+        6. **Input Data Anda** dari platform broker untuk validasi real-time
+        7. **Lihat Hybrid Forecast** untuk keputusan final
         
         **Catatan:** Semua fitur sudah terintegrasi dalam 6 tab di atas!
         """)
