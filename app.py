@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 import ta
 import json
 import os
+import time
+import random
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -892,18 +894,44 @@ BROKER_LIST = {
 # FUNGSI TEKNIKAL ANALISIS
 # ============================================================================
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=600)
 def get_stock_data(symbol, period='1y', interval='1d'):
-    """Mengambil data saham dari Yahoo Finance"""
-    try:
-        stock = yf.Ticker(symbol)
-        df = stock.history(period=period, interval=interval)
-        if df.empty:
+    """Mengambil data saham dari Yahoo Finance dengan retry logic"""
+    max_retries = 4
+    base_delay = 3  # detik
+
+    for attempt in range(max_retries):
+        try:
+            # Jitter acak agar tidak semua request bersamaan
+            if attempt > 0:
+                delay = base_delay * (2 ** (attempt - 1)) + random.uniform(0.5, 2.0)
+                time.sleep(delay)
+
+            ticker = yf.Ticker(symbol)
+            df = ticker.history(period=period, interval=interval, timeout=15)
+
+            if df is not None and not df.empty and len(df) >= 5:
+                df.index = pd.to_datetime(df.index)
+                if df.index.tz is not None:
+                    df.index = df.index.tz_localize(None)
+                return df
+
+        except Exception as e:
+            err_str = str(e).lower()
+            if 'too many requests' in err_str or 'rate limit' in err_str or '429' in err_str:
+                if attempt < max_retries - 1:
+                    wait = base_delay * (2 ** attempt) + random.uniform(1, 3)
+                    st.warning(f"⏳ Yahoo Finance rate limit, mencoba lagi dalam {wait:.0f} detik... ({attempt+1}/{max_retries})")
+                    time.sleep(wait)
+                    continue
+                else:
+                    st.error("❌ Yahoo Finance membatasi request. Tunggu beberapa menit lalu coba lagi.")
+            else:
+                st.error(f"❌ Error mengambil data {symbol}: {e}")
             return None
-        return df
-    except Exception as e:
-        st.error(f"Error mengambil data: {e}")
-        return None
+
+    st.error(f"❌ Gagal mengambil data {symbol} setelah {max_retries} percobaan. Coba lagi dalam 1-2 menit.")
+    return None
 
 def calculate_indicators(df):
     """Menghitung berbagai indikator teknikal lengkap"""
@@ -1514,7 +1542,23 @@ def main():
     # Info jumlah saham
     st.sidebar.markdown('---')
     st.sidebar.info(f'📊 Total: **{len(SAHAM_INDONESIA)}** saham tersedia')
+
+    # Tips rate limit
+    with st.sidebar.expander('⚠️ Jika muncul error Rate Limit'):
+        st.markdown("""
+        Yahoo Finance membatasi jumlah request.
+        **Solusi:**
+        - Tunggu 1-2 menit lalu coba lagi
+        - Klik tombol **Clear Cache** di bawah
+        - Ganti ke periode/interval yang berbeda
+        - Coba saham lain terlebih dahulu
+        """)
     
+    if st.sidebar.button('🗑️ Clear Cache & Retry', use_container_width=True):
+        st.cache_data.clear()
+        st.success('Cache dibersihkan! Silakan analisis ulang.')
+        st.rerun()
+
     # Tombol analisis
     analyze_button = st.sidebar.button('🔍 Analisis Lengkap', use_container_width=True)
     
@@ -2055,7 +2099,17 @@ def main():
                 )
                 
             else:
-                st.error(f'Data tidak cukup untuk {symbol}. Coba ubah periode atau interval.')
+                st.error(f'❌ Data tidak cukup untuk **{symbol}**.')
+                st.markdown("""
+                **Kemungkinan penyebab & solusi:**
+                - 🕐 **Rate limit Yahoo Finance** → Tunggu 1-2 menit, lalu klik *Clear Cache & Retry* di sidebar
+                - 📅 **Periode terlalu pendek** → Coba ganti ke periode lebih panjang (misal: `6mo` atau `1y`)
+                - ⏱️ **Interval tidak tersedia** → Interval `1m`/`5m` hanya tersedia untuk data 7 hari terakhir
+                - 📡 **Koneksi internet** → Periksa koneksi Anda
+                """)
+                if st.button('🔄 Coba Lagi'):
+                    st.cache_data.clear()
+                    st.rerun()
     
     else:
         # Welcome Screen
