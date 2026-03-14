@@ -26,132 +26,130 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS Custom lengkap
+# CSS Custom — kompatibel dark mode & light mode
 st.markdown("""
 <style>
     .main-header {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: bold;
-        color: #1f77b4;
+        color: #378ADD;
         text-align: center;
-        margin-bottom: 1rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 0.5rem;
     }
     .sub-header {
-        font-size: 1.2rem;
-        color: #666;
+        font-size: 1.1rem;
+        opacity: 0.7;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    .tab-subheader {
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin: 16px 0 10px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid rgba(128,128,128,0.3);
+    }
+    .buy-signal {
+        color: #00c853;
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+    .sell-signal {
+        color: #ff5252;
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+    .neutral-signal {
+        color: #ffd740;
+        font-weight: bold;
+        font-size: 1.5rem;
     }
     .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-        border-radius: 15px;
-        color: white;
+        background: rgba(55,138,221,0.12);
+        border: 1px solid rgba(55,138,221,0.3);
+        padding: 18px;
+        border-radius: 12px;
         text-align: center;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        margin: 10px 0;
+        margin: 8px 0;
     }
     .metric-card h3 {
         margin: 0;
         font-size: 1.8rem;
-    }
-    .buy-signal {
-        color: #00cc00;
-        font-weight: bold;
-        font-size: 1.5rem;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-    .sell-signal {
-        color: #ff4444;
-        font-weight: bold;
-        font-size: 1.5rem;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-    .neutral-signal {
-        color: #ffaa00;
-        font-weight: bold;
-        font-size: 1.5rem;
-    }
-    .bandar-card {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        padding: 20px;
-        border-radius: 15px;
-        color: white;
-        margin: 10px 0;
-    }
-    .broker-card {
-        background: #f8f9fa;
-        border-left: 5px solid #28a745;
-        padding: 15px;
-        margin: 5px 0;
-        border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        color: #378ADD;
     }
     .accumulation {
-        background-color: #d4edda;
-        color: #155724;
-        padding: 8px 15px;
+        background: rgba(0,200,83,0.15);
+        color: #00c853;
+        border: 1px solid #00c853;
+        padding: 6px 14px;
         border-radius: 20px;
         font-weight: bold;
         display: inline-block;
     }
     .distribution {
-        background-color: #f8d7da;
-        color: #721c24;
-        padding: 8px 15px;
+        background: rgba(255,82,82,0.15);
+        color: #ff5252;
+        border: 1px solid #ff5252;
+        padding: 6px 14px;
         border-radius: 20px;
         font-weight: bold;
         display: inline-block;
     }
     .neutral {
-        background-color: #fff3cd;
-        color: #856404;
-        padding: 8px 15px;
+        background: rgba(255,215,64,0.15);
+        color: #ffd740;
+        border: 1px solid #ffd740;
+        padding: 6px 14px;
         border-radius: 20px;
         font-weight: bold;
         display: inline-block;
     }
+    .info-box {
+        background: rgba(55,138,221,0.12);
+        border-left: 4px solid #378ADD;
+        padding: 12px 16px;
+        margin: 10px 0;
+        border-radius: 0 6px 6px 0;
+    }
+    .warning-box {
+        background: rgba(255,193,7,0.12);
+        border-left: 4px solid #ffc107;
+        padding: 12px 16px;
+        margin: 10px 0;
+        border-radius: 0 6px 6px 0;
+    }
+    .success-box {
+        background: rgba(0,200,83,0.12);
+        border-left: 4px solid #00c853;
+        padding: 12px 16px;
+        margin: 10px 0;
+        border-radius: 0 6px 6px 0;
+    }
+    .bandar-card {
+        background: rgba(127,119,221,0.12);
+        border: 1px solid rgba(127,119,221,0.35);
+        padding: 18px;
+        border-radius: 12px;
+        margin: 10px 0;
+    }
+    .strategy-box {
+        background: rgba(55,138,221,0.10);
+        border: 1px solid rgba(55,138,221,0.25);
+        padding: 18px;
+        border-radius: 10px;
+        margin: 8px 0;
+    }
     .big-lot {
-        color: #dc3545;
+        color: #ff5252;
         font-weight: bold;
         font-size: 1.1em;
     }
-    .info-box {
-        background-color: #e3f2fd;
-        border-left: 5px solid #2196f3;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 5px;
-    }
-    .warning-box {
-        background-color: #fff3cd;
-        border-left: 5px solid #ffc107;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 5px;
-    }
-    .success-box {
-        background-color: #d4edda;
-        border-left: 5px solid #28a745;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 5px;
-    }
-    .strategy-box {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
-        margin: 10px 0;
-    }
-    .tab-subheader {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #333;
-        margin: 20px 0 10px 0;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #eee;
+    .broker-card {
+        background: rgba(40,167,69,0.10);
+        border-left: 4px solid #28a745;
+        padding: 12px 16px;
+        margin: 5px 0;
+        border-radius: 0 6px 6px 0;
     }
 </style>
 """, unsafe_allow_html=True)
