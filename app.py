@@ -1767,44 +1767,96 @@ def create_broker_chart(broker_data):
 # FUNGSI GROQ AI ANALYST
 # ============================================================================
 
+# Model fallback list — jika model utama gagal, coba yang berikutnya
+GROQ_MODELS_FALLBACK = [
+    "llama3-8b-8192",
+    "llama-3.1-8b-instant",
+    "llama-3.3-70b-versatile",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it",
+]
+
 def groq_ai_analyze(prompt, groq_api_key, model="llama3-8b-8192"):
-    """Kirim prompt ke Groq API dan return response text"""
-    try:
-        import urllib.request
-        import urllib.error
+    """Kirim prompt ke Groq API dengan fallback model otomatis"""
+    import urllib.request
+    import urllib.error
 
-        payload = json.dumps({
-            "model": model,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        "Kamu adalah analis saham Indonesia profesional yang berpengalaman. "
-                        "Berikan analisis yang tajam, actionable, dan dalam Bahasa Indonesia. "
-                        "Gunakan data teknikal yang diberikan untuk insight mendalam. "
-                        "Format respons dengan poin-poin yang jelas dan ringkas."
-                    )
+    # Coba model utama dulu, lalu fallback
+    models_to_try = [model] + [m for m in GROQ_MODELS_FALLBACK if m != model]
+
+    system_prompt = (
+        "Kamu adalah analis saham Indonesia profesional yang berpengalaman. "
+        "Berikan analisis yang tajam, actionable, dan dalam Bahasa Indonesia. "
+        "Gunakan data teknikal yang diberikan untuk insight mendalam. "
+        "Format respons dengan poin-poin yang jelas dan ringkas."
+    )
+
+    last_error = ""
+    for try_model in models_to_try[:3]:  # max 3 model dicoba
+        try:
+            payload = json.dumps({
+                "model": try_model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user",   "content": prompt}
+                ],
+                "temperature": 0.4,
+                "max_tokens": 1500,
+            }).encode("utf-8")
+
+            req = urllib.request.Request(
+                "https://api.groq.com/openai/v1/chat/completions",
+                data=payload,
+                headers={
+                    "Authorization": f"Bearer {groq_api_key}",
+                    "Content-Type": "application/json",
                 },
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.4,
-            "max_tokens": 1500,
-        }).encode("utf-8")
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                result = json.loads(resp.read().decode())
+                text = result["choices"][0]["message"]["content"]
+                # Tambah info model yang dipakai jika fallback
+                if try_model != model:
+                    text = f"*(Model fallback: {try_model})*\n\n" + text
+                return text
 
-        req = urllib.request.Request(
-            "https://api.groq.com/openai/v1/chat/completions",
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {groq_api_key}",
-                "Content-Type": "application/json",
-            },
-            method="POST"
-        )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            result = json.loads(resp.read().decode())
-            return result["choices"][0]["message"]["content"]
-    except Exception as e:
-        return f"❌ Error Groq API: {str(e)}"
+        except urllib.error.HTTPError as e:
+            status = e.code
+            body = ""
+            try: body = e.read().decode()
+            except: pass
+
+            if status == 403:
+                # 403 = API key salah/expired — tidak perlu coba model lain
+                return (
+                    "❌ **Error 403 — API Key Ditolak**\n\n"
+                    "Kemungkinan penyebab:\n"
+                    "- API key salah atau sudah expired\n"
+                    "- Format di Streamlit Secrets salah\n\n"
+                    "**Solusi:**\n"
+                    "1. Buka [console.groq.com](https://console.groq.com) → buat API key baru\n"
+                    "2. Update Streamlit Secrets: `GROQ_API_KEY = \"gsk_...\"` (dengan tanda kutip)\n"
+                    "3. Redeploy aplikasi"
+                )
+            elif status == 404 or status == 400:
+                # Model tidak ditemukan — coba model berikutnya
+                last_error = f"Model '{try_model}' tidak tersedia (HTTP {status})"
+                continue
+            elif status == 429:
+                return (
+                    "❌ **Error 429 — Rate Limit**\n\n"
+                    "Terlalu banyak request ke Groq. Tunggu 30-60 detik lalu coba lagi."
+                )
+            else:
+                last_error = f"HTTP {status}: {body[:200]}"
+                continue
+
+        except Exception as e:
+            last_error = str(e)
+            continue
+
+    return f"❌ Semua model gagal. Error terakhir: {last_error}"
 
 
 def build_scanner_prompt(df_res):
@@ -2150,10 +2202,11 @@ def render_scanner_tab():
     with st.expander('⚙️ Pengaturan Model AI', expanded=False):
         groq_model = st.selectbox('Model Groq AI:', [
             'llama3-8b-8192',
-            'llama3-70b-8192',
+            'llama-3.1-8b-instant',
+            'llama-3.3-70b-versatile',
             'mixtral-8x7b-32768',
             'gemma2-9b-it',
-        ], help='llama3-70b lebih cerdas, llama3-8b lebih cepat')
+        ], help='llama3-8b-8192 paling stabil | llama-3.3-70b lebih cerdas | auto-fallback jika gagal')
         if not groq_key:
             manual_key = st.text_input('API Key (jika belum di Secrets):', type='password', placeholder='gsk_...')
             if manual_key.strip():
