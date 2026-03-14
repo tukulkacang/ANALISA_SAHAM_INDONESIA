@@ -2346,6 +2346,23 @@ def render_scanner_tab():
                            file_name=f'scanner_{datetime.now().strftime("%Y%m%d_%H%M")}.csv',
                            mime='text/csv')
 
+        # ── Shortcut Analisis Lengkap dari Scanner ───────────────────────
+        st.markdown('---')
+        st.subheader('🔗 Analisis Lengkap dari Hasil Scanner')
+        st.caption('Klik saham di bawah → otomatis pindah ke analisis lengkap (sidebar akan update)')
+        top_results = df_res.head(24)
+        btn_cols = st.columns(6)
+        for i, (_, row) in enumerate(top_results.iterrows()):
+            with btn_cols[i % 6]:
+                label = f"{row['Rec_Color']} {row['Symbol'].replace('.JK','')}"
+                score_txt = f"Score {row['Score']}"
+                if st.button(label, key=f'jump_{row["Symbol"]}_{i}', help=f"{row['Nama']} | {score_txt} | RSI {row['RSI']:.0f}"):
+                    st.session_state['scanner_jump'] = row['Symbol']
+                    st.session_state['jump_auto_run'] = True
+                    st.session_state['data_loaded'] = True
+                    st.session_state['symbol'] = row['Symbol']
+                    st.rerun()
+
     # ── SUB-TAB 2: Top Gainer / Loser ─────────────────────────────────────
     with stab2:
         st.subheader('📈 Top Gainer & Loser Hari Ini')
@@ -2570,6 +2587,20 @@ def render_scanner_tab():
             'Bandar','Entry','Stop Loss','Target','Sinyal'
         ]], use_container_width=True, hide_index=True)
 
+        # Shortcut analisis dari top BUY
+        st.markdown('---')
+        st.caption('Klik untuk langsung analisis detail:')
+        buy_btn_cols = st.columns(6)
+        for i, (_, row) in enumerate(buy_df.head(12).iterrows()):
+            with buy_btn_cols[i % 6]:
+                if st.button(f"🟢 {row['Symbol'].replace('.JK','')}", key=f'buyjump_{row["Symbol"]}',
+                             help=f"{row['Nama']} | Score {row['Score']}"):
+                    st.session_state['jump_default'] = row['Symbol']
+                    st.session_state['jump_auto_run'] = True
+                    st.session_state['data_loaded'] = True
+                    st.session_state['symbol'] = row['Symbol']
+                    st.rerun()
+
     # ── SUB-TAB 6: AI Analyst (Groq) ──────────────────────────────────────
     with stab6:
         st.subheader('🤖 AI Analyst — Powered by Groq (LLaMA / Mixtral)')
@@ -2688,9 +2719,20 @@ def main():
     else:
         stock_options = SAHAM_INDONESIA
     
+    # Jika user klik "Analisis Saham Ini" dari scanner → auto-pilih saham
+    if 'scanner_jump' in st.session_state:
+        jump_sym = st.session_state.pop('scanner_jump')
+        if jump_sym in SAHAM_INDONESIA:
+            st.session_state['jump_default'] = jump_sym
+
+    jump_default = st.session_state.get('jump_default', None)
+    all_keys = list(stock_options.keys())
+    default_idx = all_keys.index(jump_default) if jump_default and jump_default in all_keys else 0
+
     selected_stock = st.sidebar.selectbox(
         f'Pilih Saham ({len(stock_options)} tersedia):',
-        options=list(stock_options.keys()),
+        options=all_keys,
+        index=default_idx,
         format_func=lambda x: f"{x} - {stock_options[x]}"
     )
     
@@ -2754,7 +2796,12 @@ def main():
         st.rerun()
 
     # Tombol analisis
-    analyze_button = st.sidebar.button('🔍 Analisis Lengkap', use_container_width=True)
+    analyze_button = st.sidebar.button('🔍 Analisis Lengkap', use_container_width=True, type='primary')
+
+    # Auto-trigger analisis jika lompat dari scanner
+    if 'jump_default' in st.session_state and st.session_state.get('jump_auto_run'):
+        analyze_button = True
+        st.session_state.pop('jump_auto_run', None)
     
     # Main Content
     if analyze_button or 'data_loaded' in st.session_state:
