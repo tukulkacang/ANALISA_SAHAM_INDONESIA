@@ -2452,13 +2452,14 @@ def main():
             if df is not None and len(df) > 20:
                 df = calculate_indicators(df)
                 
-                tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+                tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
                     '📊 Technical Analysis',
                     '🎯 Strategy Signals',
                     '🕵️ Bandarmologi & Foreign Flow',
                     '📡 Foreign Net IDX (Nyata)',
                     '🏛️ Institutional Ownership',
                     '🔮 Hybrid Forecast',
+                    '🔭 Stock Scanner',
                 ])
                 
                 # ================================================================
@@ -2932,6 +2933,12 @@ def main():
                     mime='text/csv'
                 )
                 
+                # ================================================================
+                # TAB 7: STOCK SCANNER
+                # ================================================================
+                with tab7:
+                    render_scanner_tab()
+
             else:
                 st.error(f'❌ Data tidak cukup untuk **{symbol}**.')
                 st.markdown("""
@@ -2947,6 +2954,9 @@ def main():
     
     else:
         # Welcome Screen
+        st.info('👈 Pilih saham di sidebar lalu klik **Analisis Lengkap** — atau langsung pakai **🔭 Stock Scanner** di bawah!')
+        st.markdown('---')
+        render_scanner_tab()
         st.markdown('---')
         st.subheader(f'✨ {len(SAHAM_INDONESIA)} Saham Tersedia — Fitur Utama Aplikasi')
         
